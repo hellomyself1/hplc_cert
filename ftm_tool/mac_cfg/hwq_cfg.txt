@@ -1,0 +1,25 @@
+
+hwq_cfg:
+{
+    uint8_t tx_mode=1; 
+
+    uint8_t hwqid0=0;
+    uint8_t qtype0=0;
+    uint8_t qcap0=0;
+
+    uint8_t hwqid1=1;
+    uint8_t qtype1=0;
+    uint8_t qcap1=0;
+
+    uint8_t hwqid2=2;
+    uint8_t qtype2=0;
+    uint8_t qcap2=0;
+
+    uint8_t hwqid3=3;
+    uint8_t qtype3=0;
+    uint8_t qcap3=0;
+
+    uint8_t hwqid4=4;
+    uint8_t qtype4=0;
+    uint8_t qcap4=0;
+}

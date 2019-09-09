@@ -1,0 +1,12 @@
+
+crc_cfg:
+{
+    uint8_t  fccs_by_sw = 0; //1:by sw, 0:by hw
+    uint8_t  pb_crc_by_sw = 0;
+    uint8_t  bcn_crc_by_sw = 1;
+    
+    //is verify by sw
+    uint8_t is_verify_fc = 1;
+    uint8_t is_verify_pb = 0;
+    uint8_t is_verify_payload = 0;
+}

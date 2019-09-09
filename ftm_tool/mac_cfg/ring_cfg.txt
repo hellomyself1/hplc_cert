@@ -1,0 +1,21 @@
+
+/*rx_cfg*/
+typedef struct _rx_cfg
+{
+    uint8_t ring_id = 0;
+    uint8_t ring_sz = 10;   //20           40
+    uint32_t buf_sz = 584;  //200£º64+136  584£º64+520  136:64+72  328:64+264
+    uint8_t bufsz_filter_sel=0;
+    uint8_t filter=0;
+//0 rx_desc
+    uint8_t cfg_type0 = 0;  //desc
+    uint8_t cfg_offset0 = 0;
+    uint8_t cfg_enable0 = 1;
+
+//1 rx_payload
+    uint8_t cfg_type1 = 6;
+    uint8_t cfg_offset1 = 64;  //payload offset
+    uint8_t cfg_enable1 = 1;
+    
+    uint8_t cert_flag = 0;
+}rx_cfg_t;

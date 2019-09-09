@@ -1,0 +1,24 @@
+
+pkt_cfg:
+{
+    uint8_t  proto=3;
+    uint8_t  qid=0;
+    uint8_t  bcast=1;
+    uint8_t  delimiter_type=1;
+    uint32_t nid=0x0;
+    uint32_t dtei=0xfff;
+    uint32_t stei=0x0;
+    uint8_t  tmi=1;
+    uint8_t  ext_tmi=0;
+    uint8_t  lid=0;
+    uint8_t  pb_num=1;
+    uint8_t  need_ack=1;
+    uint8_t  need_encry = 0;
+    uint8_t  need_decrypt = 0;
+    uint32_t avln_idx_in_desc = 0;
+    uint32_t key_table_idx_in_desc = 0;
+    uint32_t key_idx_in_desc = 0;
+    uint8_t  hw_retry_cnt = 0;
+    uint8_t phase=0;
+    uint8_t pkt_idx=0;
+}

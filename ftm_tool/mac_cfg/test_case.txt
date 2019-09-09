@@ -1,0 +1,6 @@
+
+send_case_cfg {
+    uint32_t interval_time=200;//unit 1'ms
+    uint32_t packe_num=10; // total numbers
+    uint32_t user_updata_time=1;
+} 

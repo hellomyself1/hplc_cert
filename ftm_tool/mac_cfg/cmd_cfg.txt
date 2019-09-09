@@ -1,0 +1,87 @@
+cmd_cfg:
+{
+    uint8_t  ping_cmd_num = 3;
+    uint32_t  ping_bcn_period = 60;      //unit 1ms
+    
+    uint8_t  pong_cmd_num = 3;
+    uint32_t  pong_bcn_period = 60;      //unit 1ms
+    
+    uint8_t  st_flag0 = 0;
+    uint8_t  r_flag0 = 0;
+    uint8_t  r_start_flag0 = 0;
+    uint8_t  r_end_flag0 = 0;
+    uint8_t  phase0 = 0;
+    uint8_t  idle_bit0 = 0;
+    uint8_t  req_int0 = 0;
+    uint8_t  rx_rate_mode0 = 0;
+    uint8_t  narrow_band0 = 0;
+    uint32_t enable_bitmap0 = 1;
+    uint32_t start_time0 = 0;
+    uint32_t end_time0 = 20;
+    
+    uint8_t  st_flag1 = 0;
+    uint8_t  r_flag1 = 0;
+    uint8_t  r_start_flag1 = 0;
+    uint8_t  r_end_flag1 = 0;
+    uint8_t  phase1 = 0;
+    uint8_t  idle_bit1 = 0;
+    uint8_t  req_int1 = 0;
+    uint8_t  rx_rate_mode1 = 0;
+    uint8_t  narrow_band1 = 0;
+    uint32_t enable_bitmap1 = 2;
+    uint32_t start_time1 = 0;
+    uint32_t end_time1 = 40;
+    
+    uint8_t  st_flag2 = 0;
+    uint8_t  r_flag2 = 0;
+    uint8_t  r_start_flag2 = 0;
+    uint8_t  r_end_flag2 = 0;
+    uint8_t  phase2 = 0;
+    uint8_t  idle_bit2 = 0;
+    uint8_t  req_int2 = 0;
+    uint8_t  rx_rate_mode2 = 0;
+    uint8_t  narrow_band2 = 0;
+    uint32_t enable_bitmap2 = 4;
+    uint32_t start_time2 = 0;
+    uint32_t end_time2 = 60;
+    
+    uint8_t  st_flag3 = 0;
+    uint8_t  r_flag3 = 0;
+    uint8_t  r_start_flag3 = 0;
+    uint8_t  r_end_flag3 = 0;
+    uint8_t  phase3 = 0;
+    uint8_t  idle_bit3 = 0;
+    uint8_t  req_int3 = 0;
+    uint8_t  rx_rate_mode3 = 0;
+    uint8_t  narrow_band3 = 0;
+    uint32_t enable_bitmap3 = 1;
+    uint32_t start_time3 = 0;
+    uint32_t end_time3 = 20;
+    
+    uint8_t  st_flag4 = 0;
+    uint8_t  r_flag4 = 0;
+    uint8_t  r_start_flag4 = 0;
+    uint8_t  r_end_flag4 = 0;
+    uint8_t  phase4 = 0;
+    uint8_t  idle_bit4 = 0;
+    uint8_t  req_int4 = 0;
+    uint8_t  rx_rate_mode4 = 0;
+    uint8_t  narrow_band4 = 0;
+    uint32_t enable_bitmap4 = 2;
+    uint32_t start_time4 = 0;
+    uint32_t end_time4 = 40;
+    
+    uint8_t  st_flag5 = 0;
+    uint8_t  r_flag5 = 0;
+    uint8_t  r_start_flag5 = 0;
+    uint8_t  r_end_flag5 = 0;
+    uint8_t  phase5 = 0;
+    uint8_t  idle_bit5 = 0;
+    uint8_t  req_int5 = 0;
+    uint8_t  rx_rate_mode5 = 0;
+    uint8_t  narrow_band5 = 0;
+    uint32_t enable_bitmap5 = 4;
+    uint32_t start_time5 = 0;
+    uint32_t end_time5 = 60;
+    
+}
