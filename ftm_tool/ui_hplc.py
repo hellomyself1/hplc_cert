@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_demo_1.ui'
+# Form implementation generated from reading ui file 'ui_hplc.ui'
 #
 # Created by: PyQt5 UI code generator 5.13.0
 #
@@ -14,9 +14,9 @@ class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
         Form.resize(1293, 923)
-        self.hwq_cfg = QtWidgets.QPushButton(Form)
-        self.hwq_cfg.setGeometry(QtCore.QRect(330, 10, 75, 23))
-        self.hwq_cfg.setObjectName("hwq_cfg")
+        self.smoe_test = QtWidgets.QPushButton(Form)
+        self.smoe_test.setGeometry(QtCore.QRect(330, 10, 75, 23))
+        self.smoe_test.setObjectName("smoe_test")
         self.treeWidget = QtWidgets.QTreeWidget(Form)
         self.treeWidget.setGeometry(QtCore.QRect(10, 80, 349, 571))
         self.treeWidget.setObjectName("treeWidget")
@@ -48,7 +48,7 @@ class Ui_Form(object):
         self.lcdNumber = QtWidgets.QLCDNumber(Form)
         self.lcdNumber.setGeometry(QtCore.QRect(350, 42, 151, 31))
         self.lcdNumber.setObjectName("lcdNumber")
-        self.hwq_cfg.raise_()
+        self.smoe_test.raise_()
         self.tableWidget.raise_()
         self.treeWidget.raise_()
         self.pushButton_start.raise_()
@@ -64,7 +64,7 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
-        self.hwq_cfg.setText(_translate("Form", "hwq_cfg"))
+        self.smoe_test.setText(_translate("Form", "some_test"))
         self.pushButton_start.setText(_translate("Form", "Start"))
         self.open_button.setText(_translate("Form", "初始化设备"))
         self.close_button.setText(_translate("Form", "冻结设备"))

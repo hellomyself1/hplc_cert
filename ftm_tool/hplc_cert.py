@@ -8,7 +8,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMessageBox, QTextEdit, QLCDNumber
 from PyQt5.QtCore import QTimer
 from PyQt5.QtCore import pyqtSignal
-from ui_demo_1 import Ui_Form
+from ui_hplc import Ui_Form
 import ftm_cmd
 import ui2
 import configparser
@@ -61,7 +61,7 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         # 关闭串口按钮
         self.close_button.clicked.connect(self.port_close)
 
-        self.hwq_cfg.clicked.connect(self.hwq_cfg_func)
+        self.smoe_test.clicked.connect(self.some_test_func)
 
         self.pushButton_start.clicked.connect(self.test_start)
 
@@ -241,20 +241,11 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         else:
             pass
 
-    # hwq_cfg
-    def hwq_cfg_func(self):
-        #self.auto.auto_ftm_set_self_band(0, 0)
-        #self.auto.auto_init_ftm(0, 0)
-        #self.auto.auto_ftm_rx_config()
-        self.auto.auto_ftm_tx_test_pkt(4)
-
-
-        '''
+    # smoe_test
+    def some_test_func(self):
         self.timer = QTimer(self)  # 初始化一个定时器
         self.timer.timeout.connect(self.auto.test_case)  # 计时结束调用operate()方法
         self.timer.start(20*1000)  # 设置计时间隔并启动
-        '''
-
 
     def readfile_test(self):
         config = configparser.ConfigParser()

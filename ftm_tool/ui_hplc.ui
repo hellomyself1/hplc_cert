@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QPushButton" name="hwq_cfg">
+  <widget class="QPushButton" name="smoe_test">
    <property name="geometry">
     <rect>
      <x>330</x>
@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>hwq_cfg</string>
+    <string>some_test</string>
    </property>
   </widget>
   <widget class="QTreeWidget" name="treeWidget">
@@ -135,7 +135,7 @@
     </rect>
    </property>
   </widget>
-  <zorder>hwq_cfg</zorder>
+  <zorder>smoe_test</zorder>
   <zorder>tableWidget</zorder>
   <zorder>treeWidget</zorder>
   <zorder>pushButton_start</zorder>
