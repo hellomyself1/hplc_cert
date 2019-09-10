@@ -31,7 +31,7 @@ class NARROW_MARCO:
 class signal_generator:
 
     def __init__(self, record_log):
-        #self.rm = visa.ResourceManager()
+        self.rm = visa.ResourceManager()
         self.inst = None
         self.record_log = record_log
         self.att_control_ser = serial.Serial()
@@ -50,7 +50,6 @@ class signal_generator:
         if config_tmp.has_option("signal_generator", "sg_name"):
             sg_name = str(config_tmp.get("signal_generator", "sg_name"))
         print(sg_name)
-        nnnn = 'USB0::0x1AB1::0x0642::DG1ZA202102461::INSTR'
         # 'USB0::0x1AB1::0x0642::DG1ZA202102461::INSTR'
         self.inst = self.rm.open_resource(sg_name)
         # check signal generator

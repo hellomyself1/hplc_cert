@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c97c0122-51a3-426c-ac6f-5199f6ea3606" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/hplc_cert.py" beforeDir="false" afterPath="$PROJECT_DIR$/hplc_cert.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui_demo_1.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui_hplc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui_demo_1.ui" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/signal_generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/signal_generator.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -25,8 +23,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/hplc_cert.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="50">
-              <caret line="230" column="24" lean-forward="true" selection-start-line="230" selection-start-column="24" selection-end-line="230" selection-end-column="24" />
+            <state relative-caret-position="4731">
+              <caret line="270" column="51" lean-forward="true" selection-start-line="270" selection-start-column="51" selection-end-line="270" selection-end-column="51" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -34,10 +32,10 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ui_hplc.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="114">
+            <state relative-caret-position="-454">
               <caret line="6" column="54" lean-forward="true" selection-start-line="6" selection-start-column="54" selection-end-line="6" selection-end-column="54" />
             </state>
           </provider>
@@ -46,7 +44,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ftm_auto.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="618">
+            <state relative-caret-position="18658">
               <caret line="1291" column="38" lean-forward="true" selection-start-line="1291" selection-start-column="38" selection-end-line="1291" selection-end-column="38" />
               <folding>
                 <element signature="e#24#38#0" expanded="true" />
@@ -67,7 +65,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ftm_cmd.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1463">
+            <state relative-caret-position="1235">
               <caret line="89" selection-start-line="89" selection-end-line="89" />
               <folding>
                 <element signature="e#25#35#0" expanded="true" />
@@ -88,11 +86,14 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/signal_generator.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="95">
-              <caret line="5" column="13" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
+            <state relative-caret-position="266">
+              <caret line="23" column="17" lean-forward="true" selection-start-line="23" selection-start-column="17" selection-end-line="23" selection-end-column="17" />
+              <folding>
+                <element signature="e#15#26#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -162,13 +163,13 @@
         <option value="$PROJECT_DIR$/ui2.py" />
         <option value="$PROJECT_DIR$/../20190830143631_5d68c3ef89e05/python/RigolTest.py" />
         <option value="$PROJECT_DIR$/../信号发生器/20190830143631_5d68c3ef89e05/python/RigolTest.py" />
-        <option value="$PROJECT_DIR$/signal_generator.py" />
         <option value="$PROJECT_DIR$/../test1/test1.py" />
         <option value="$PROJECT_DIR$/pyserial_demo.py" />
         <option value="$PROJECT_DIR$/../test1/Statistics_entry_cert_mode.py" />
         <option value="$PROJECT_DIR$/analysis_tool/log_analysis_entry_cert_mode/Statistics_entry_cert_mode.py" />
         <option value="$PROJECT_DIR$/crc_calu.py" />
         <option value="$PROJECT_DIR$/ftm_auto.py" />
+        <option value="$PROJECT_DIR$/signal_generator.py" />
         <option value="$PROJECT_DIR$/hplc_cert.py" />
       </list>
     </option>
@@ -401,12 +402,12 @@
       <workItem from="1567998477085" duration="2883000" />
       <workItem from="1568027658763" duration="1745000" />
       <workItem from="1568086170864" duration="541000" />
-      <workItem from="1568100415331" duration="15766000" />
+      <workItem from="1568100415331" duration="16214000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="352696000" />
+    <option name="totallyTimeSpent" value="353144000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1912" y="-8" width="2576" height="1416" extended-state="6" />
@@ -605,27 +606,54 @@
     <entry file="file://$PROJECT_DIR$/../test3/test.py" />
     <entry file="file://$PROJECT_DIR$/../test1/test1.py" />
     <entry file="file://$PROJECT_DIR$/../test1/Statistics_entry_cert_mode.py" />
-    <entry file="file://$PROJECT_DIR$/ftm_cmd.py">
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python37/Lib/threading.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1463">
-          <caret line="89" selection-start-line="89" selection-end-line="89" />
+        <state relative-caret-position="271">
+          <caret line="869" selection-start-line="869" selection-end-line="869" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hplc_cert.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4731">
+          <caret line="270" column="51" lean-forward="true" selection-start-line="270" selection-start-column="51" selection-end-line="270" selection-end-column="51" />
           <folding>
-            <element signature="e#25#35#0" expanded="true" />
+            <element signature="e#0#10#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/signal_generator.py">
+    <entry file="file://$PROJECT_DIR$/ui_hplc.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="95">
-          <caret line="5" column="13" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
+        <state relative-caret-position="-454">
+          <caret line="6" column="54" lean-forward="true" selection-start-line="6" selection-start-column="54" selection-end-line="6" selection-end-column="54" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/analysis_tool/log_analysis_entry_cert_mode/Statistics_entry_cert_mode.py">
+    <entry file="file://$PROJECT_DIR$/ftm_auto.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="551">
-          <caret line="29" column="15" selection-start-line="29" selection-start-column="15" selection-end-line="29" selection-end-column="15" />
+        <state relative-caret-position="18658">
+          <caret line="1291" column="38" lean-forward="true" selection-start-line="1291" selection-start-column="38" selection-end-line="1291" selection-end-column="38" />
+          <folding>
+            <element signature="e#24#38#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/crc_calu.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="342">
+          <caret line="18" column="38" lean-forward="true" selection-start-line="18" selection-start-column="38" selection-end-line="18" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ftm_cmd.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1235">
+          <caret line="89" selection-start-line="89" selection-end-line="89" />
+          <folding>
+            <element signature="e#25#35#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -639,44 +667,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python37/Lib/threading.py">
+    <entry file="file://$PROJECT_DIR$/analysis_tool/log_analysis_entry_cert_mode/Statistics_entry_cert_mode.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="271">
-          <caret line="869" selection-start-line="869" selection-end-line="869" />
+        <state relative-caret-position="551">
+          <caret line="29" column="15" selection-start-line="29" selection-start-column="15" selection-end-line="29" selection-end-column="15" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/crc_calu.py">
+    <entry file="file://$PROJECT_DIR$/signal_generator.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="18" column="38" lean-forward="true" selection-start-line="18" selection-start-column="38" selection-end-line="18" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ftm_auto.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="618">
-          <caret line="1291" column="38" lean-forward="true" selection-start-line="1291" selection-start-column="38" selection-end-line="1291" selection-end-column="38" />
+        <state relative-caret-position="266">
+          <caret line="23" column="17" lean-forward="true" selection-start-line="23" selection-start-column="17" selection-end-line="23" selection-end-column="17" />
           <folding>
-            <element signature="e#24#38#0" expanded="true" />
+            <element signature="e#15#26#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/hplc_cert.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="50">
-          <caret line="230" column="24" lean-forward="true" selection-start-line="230" selection-start-column="24" selection-end-line="230" selection-end-column="24" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ui_hplc.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="114">
-          <caret line="6" column="54" lean-forward="true" selection-start-line="6" selection-start-column="54" selection-end-line="6" selection-end-column="54" />
         </state>
       </provider>
     </entry>

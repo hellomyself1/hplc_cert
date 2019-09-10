@@ -55,17 +55,17 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         self.lcdNumber.setStyleSheet("border: 0.1px solid black; color: green; background: silver;")
         self.pbar.setValue(0)
 
-        # 打开串口按钮
+        # open connect function
         self.open_button.clicked.connect(self.port_open)
 
-        # 关闭串口按钮
+        # close
         self.close_button.clicked.connect(self.port_close)
 
         self.smoe_test.clicked.connect(self.some_test_func)
 
         self.pushButton_start.clicked.connect(self.test_start)
 
-        # 连接发射函数
+        # connect function
         # pbar
         self.signal_pbar.connect(self.pbar_set)
         # txt
@@ -182,9 +182,9 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         # att control serial port open
         self.auto.sig_gen.att_control_ser_open()
         # open signal generator
-        #self.auto.sig_gen.open_signal_generator()
+        self.auto.sig_gen.open_signal_generator()
 
-    # 关闭串口
+    # close serial
     def port_close(self):
         try:
             self.user.stop_thread()
@@ -199,7 +199,7 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         self.open_button.setEnabled(True)
         self.close_button.setEnabled(False)
 
-    # 上下电发送命令
+    # power on/down cmd
     def switch_send_cmd(self, str_cmd):
         if self.switch_ser.isOpen():
             input_s = str_cmd
@@ -220,7 +220,7 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         else:
             pass
 
-    # 发送命令
+    # send data
     def data_send_cmd(self, str_cmd):
         if self.ser.isOpen():
             input_s = str_cmd
@@ -241,12 +241,13 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         else:
             pass
 
-    # smoe_test
+    # some_test
     def some_test_func(self):
-        self.timer = QTimer(self)  # 初始化一个定时器
-        self.timer.timeout.connect(self.auto.test_case)  # 计时结束调用operate()方法
-        self.timer.start(20*1000)  # 设置计时间隔并启动
+        self.timer = QTimer(self)  # init timer
+        self.timer.timeout.connect(self.auto.test_case)
+        self.timer.start(20*1000)  # start timer
 
+    # read file test
     def readfile_test(self):
         config = configparser.ConfigParser()
         config_file = ".\config\cert_config.ini"
@@ -264,9 +265,9 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         self.tree.tw.table_statistics()
 
     def log_display(self, str):
-        # 获取到text光标
+        # get test cursor
         textCursor = self.textBrowser.textCursor()
-        # 滚动到底部
+        # move cursor to end
         self.textBrowser.moveCursor(textCursor.End)
 
         self.textBrowser.insertPlainText(str)
