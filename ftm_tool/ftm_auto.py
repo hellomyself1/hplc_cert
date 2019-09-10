@@ -90,16 +90,21 @@ class TMI_MARCO:
     TMI_12 = 12
     TMI_13 = 13
     TMI_14 = 14
+    TMI_MAX = 15
+
+class EXTMI_MARCO:
     EXTMI_1 = 1
-    EXTMI_2 = 1
-    EXTMI_3 = 1
-    EXTMI_4 = 1
-    EXTMI_5 = 1
-    EXTMI_6 = 1
-    EXTMI_7 = 1
-    EXTMI_8 = 1
-    EXTMI_9 = 1
-    EXTMI_10 = 1
+    EXTMI_2 = 2
+    EXTMI_3 = 3
+    EXTMI_4 = 4
+    EXTMI_5 = 5
+    EXTMI_6 = 6
+    EXTMI_10 = 10
+    EXTMI_11 = 11
+    EXTMI_12 = 12
+    EXTMI_13 = 13
+    EXTMI_14 = 14
+    EXTMI_MAX = 15
 
 class SIGNOL_MARCO:
     WHITE_TEST = 1
@@ -119,13 +124,16 @@ class ftm_auto():
         self.ftm = ftmuser
         self.switch_ser = switch_ser
         self.error_type = 0
-        self.rx_data_ser = serial.Serial()
+        # transparent transmission serial port
+        self.tt_ser = serial.Serial()
+        self.tt_c_thread = None
+        # loopback serial port
+        self.lp_ser = serial.Serial()
+        self.lp_c_thread = None
 
         # rx data thread
         self.compare_queue = queue.Queue(maxsize=-1)
 
-        self.rx_c_thread = None
-        self.rx_f_thread = None
         self.pack_info = b''
         self.pack_compare = b''
         self.data_record_flag = 0
@@ -145,11 +153,12 @@ class ftm_auto():
         self.sig_gen = signal_generator.signal_generator(self.record_log)
         self.att_control_ser = self.sig_gen.att_control_ser
         self.overnight_cnt = 0
+        self.crc_calu = crc_calu.crc_calu()
 
     def auto_pbar_set(self, int):
         self.pbar_emit(int)
 
-    def rx_data_ser_open(self):
+    def tt_ser_open(self):
 
         # config
         config_tmp = configparser.ConfigParser()
@@ -159,34 +168,74 @@ class ftm_auto():
         except Exception:
             print("file open fail")
 
-        if config_tmp.has_option("rx_data_config", "s2_serial_port"):
-            self.rx_data_ser.port = config_tmp.get("rx_data_config", "s2_serial_port")
-        if config_tmp.has_option("rx_data_config", "s2_baudrate"):
-            self.rx_data_ser.baudrate = int(config_tmp.get("rx_data_config", "s2_baudrate"))
-        if config_tmp.has_option("rx_data_config", "s2_bytesize"):
-            self.rx_data_ser.bytesize = int(config_tmp.get("rx_data_config", "s2_bytesize"))
-        if config_tmp.has_option("rx_data_config", "s2_stopbits"):
-            self.rx_data_ser.stopbits = int(config_tmp.get("rx_data_config", "s2_stopbits"))
-        if config_tmp.has_option("rx_data_config", "s2_parity"):
-            self.rx_data_ser.parity = config_tmp.get("rx_data_config", "s2_parity")
+        if config_tmp.has_option("tt_config", "s2_serial_port"):
+            self.tt_ser.port = config_tmp.get("tt_config", "s2_serial_port")
+        if config_tmp.has_option("tt_config", "s2_baudrate"):
+            self.tt_ser.baudrate = int(config_tmp.get("tt_config", "s2_baudrate"))
+        if config_tmp.has_option("tt_config", "s2_bytesize"):
+            self.tt_ser.bytesize = int(config_tmp.get("tt_config", "s2_bytesize"))
+        if config_tmp.has_option("tt_config", "s2_stopbits"):
+            self.tt_ser.stopbits = int(config_tmp.get("tt_config", "s2_stopbits"))
+        if config_tmp.has_option("tt_config", "s2_parity"):
+            self.tt_ser.parity = config_tmp.get("tt_config", "s2_parity")
 
-        self.record_log(hplc_cert.debug_leave.LOG_DEBUG, 'rx data serial config ' + self.rx_data_ser.port +
-                        ' %s' % self.rx_data_ser.baudrate + ' %s' % self.rx_data_ser.bytesize +
-                        ' %s' % self.rx_data_ser.stopbits + ' ' + self.rx_data_ser.parity)
+        self.record_log(hplc_cert.debug_leave.LOG_DEBUG, 'tt serial config ' + self.tt_ser.port +
+                        ' %s' % self.tt_ser.baudrate + ' %s' % self.tt_ser.bytesize +
+                        ' %s' % self.tt_ser.stopbits + ' ' + self.tt_ser.parity)
 
         try:
-            self.rx_data_ser.open()
-            self.start_rx_thread()
-            self.record_log(hplc_cert.debug_leave.LOG_ERROR, "rx data serial open successed!")
+            self.tt_ser.open()
+            self.start_tt_thread()
+            self.record_log(hplc_cert.debug_leave.LOG_ERROR, "tt serial open successed!")
         except:
-            self.record_log(hplc_cert.debug_leave.LOG_ERROR, "rx data 串口不能被打开！")
+            self.record_log(hplc_cert.debug_leave.LOG_ERROR, "tt 串口不能被打开！")
             return None
 
-    def start_rx_thread(self):
+    def start_tt_thread(self):
         # start threads for serial port data collection
-        self.rx_c_thread = threading.Thread(target=self.rx_data_handle)
-        self.rx_c_thread.setDaemon(True)
-        self.rx_c_thread.start()
+        self.tt_c_thread = threading.Thread(target=self.tt_data_handle)
+        self.tt_c_thread.setDaemon(True)
+        self.tt_c_thread.start()
+
+
+    def lp_ser_open(self):
+
+        # config
+        config_tmp = configparser.ConfigParser()
+        config_file = ".\config\cert_config.ini"
+        try:
+            config_tmp.read(config_file, encoding="utf-8")
+        except Exception:
+            print("file open fail")
+
+        if config_tmp.has_option("lp_config", "s5_serial_port"):
+            self.lp_ser.port = config_tmp.get("lp_config", "s5_serial_port")
+        if config_tmp.has_option("lp_config", "s5_baudrate"):
+            self.lp_ser.baudrate = int(config_tmp.get("lp_config", "s5_baudrate"))
+        if config_tmp.has_option("lp_config", "s5_bytesize"):
+            self.lp_ser.bytesize = int(config_tmp.get("lp_config", "s5_bytesize"))
+        if config_tmp.has_option("lp_config", "s5_stopbits"):
+            self.lp_ser.stopbits = int(config_tmp.get("lp_config", "s5_stopbits"))
+        if config_tmp.has_option("lp_config", "s5_parity"):
+            self.lp_ser.parity = config_tmp.get("lp_config", "s5_parity")
+
+        self.record_log(hplc_cert.debug_leave.LOG_DEBUG, 'lp serial config ' + self.lp_ser.port +
+                        ' %s' % self.lp_ser.baudrate + ' %s' % self.lp_ser.bytesize +
+                        ' %s' % self.lp_ser.stopbits + ' ' + self.lp_ser.parity)
+
+        try:
+            self.lp_ser.open()
+            self.start_lp_thread()
+            self.record_log(hplc_cert.debug_leave.LOG_ERROR, "lp serial open successed!")
+        except:
+            self.record_log(hplc_cert.debug_leave.LOG_ERROR, "lp 串口不能被打开！")
+            return None
+
+    def start_lp_thread(self):
+        # start threads for serial port data collection
+        self.lp_c_thread = threading.Thread(target=self.lp_data_handle)
+        self.lp_c_thread.setDaemon(True)
+        self.lp_c_thread.start()
 
     # kill child thread
     def _async_raise(self, tid, exctype):
@@ -205,17 +254,59 @@ class ftm_auto():
 
     # kill child thread
     def stop_thread(self):
-        self._async_raise(self.rx_c_thread.ident, SystemExit)
+        self._async_raise(self.tt_c_thread.ident, SystemExit)
+        self._async_raise(self.lp_c_thread.ident, SystemExit)
 
-    def rx_data_handle(self):
+    def tt_data_handle(self):
         num = 0
         while 1:
-            bytes2read = self.rx_data_ser.inWaiting()
+            bytes2read = self.tt_ser.inWaiting()
             if not bytes2read:
                 continue
 
             try:
-                tmp = self.rx_data_ser.read(bytes2read)
+                tmp = self.tt_ser.read(bytes2read)
+                self.pack_info += binascii.hexlify(tmp)
+            except :
+                continue
+
+            if self.data_record_flag == 0:
+                self.pack_info = b''
+                continue
+
+            num += bytes2read
+
+            str_compare = str(self.pack_compare, encoding='utf-8')
+            str_len = len(str_compare)/2
+
+            # TODO: maybe have same better way to handle serial rx frame break
+            if num < str_len:
+                continue
+
+            str_info = str(self.pack_info, encoding='utf-8')
+
+            self.log_display_record('receive_data:' + str_info, 0)
+            self.log_display_record('send_data:' + str_compare, 0)
+
+            if str_compare in str_info:
+                print('pass')
+                self.compare_queue.put('compare_pass')
+            else:
+                print('fail')
+                self.compare_queue.put('compare_fail')
+
+            self.pack_info = b''
+            num = 0
+
+    def lp_data_handle(self):
+        num = 0
+        while 1:
+            bytes2read = self.lp_ser.inWaiting()
+            if not bytes2read:
+                continue
+
+            try:
+                tmp = self.lp_ser.read(bytes2read)
                 self.pack_info += binascii.hexlify(tmp)
             except :
                 continue
@@ -353,7 +444,7 @@ class ftm_auto():
     def auto_ftm_get_fc_info(self):
         # get fc
         data_fc = self.auto_tx_data("dtest read 0x51001050 16")
-        data_crc = crc_calu.crc_calu.crc24(data_fc)
+        data_crc = self.crc_calu.crc24(data_fc)
         data_crc = struct.pack('<I', data_crc)
         data_crc = data_crc[:-1]
         pack_fc = data_fc + data_crc
@@ -545,8 +636,107 @@ class ftm_auto():
                     return [last_value, att_pass_threshold]
         return [last_value, att_pass_threshold]
 
+    def loopback_handle(self, str_title, band_id, tmi_max):
+        # start run
+        str_ftm = "开始测试 " + str_title
+        self.log_display_record(str_ftm)
+        str_ftm = "台体开始上电"
+        self.log_display_record(str_ftm)
+        self.switch_ser(POWER_MARCO.POWER_DOWN)
+
+        str_ftm = "初始化台体"
+        self.log_display_record(str_ftm)
+        # proto = sg, band = 2
+        self.auto_init_ftm(PROTO_MARCO.PROTO_SG, BAND_ID_MARCO.PROTO_BAND_ID_2)
+
+        str_ftm = "模块上电"
+        self.log_display_record(str_ftm)
+        self.switch_ser(POWER_MARCO.POWER_ON)
+        time.sleep(5)
+
+        self.auto_pbar_set(5)
+
+        str_ftm = "开始发送设置band的包"
+        self.log_display_record(str_ftm)
+        self.auto_ftm_set_band(PROTO_MARCO.PROTO_SG, band_id)
+        # proto = sg, band = 0
+        self.auto_ftm_set_self_band(PROTO_MARCO.PROTO_SG, band_id)
+
+        self.auto_pbar_set(10)
+
+        str_ftm = "开始发送测试包"
+        self.log_display_record(str_ftm)
+        self.auto_ftm_tx_test_pkt(TMI_MARCO.TMI_4)
+
+        self.auto_pbar_set(20)
+
+        pbar_value = 20
+        # calulate pbar step
+        pbar_step = 80/tmi_max
+        print(pbar_step)
+
+        # entry rx mode
+        self.auto_ftm_rx_config()
+
+        # send test pkt
+        str_ftm = "开始发送进入回传模式的包"
+        self.log_display_record(str_ftm)
+        self.auto_ftm_entry_mode(PROTO_MARCO.PROTO_SG, MODE_MARCO.CERT_TEST_CMD_ENTER_PHY_LP)
+        self.data_record_flag = 0
+        compare_flag, compare_cnt = 0, 0
+        not_entry_lp = 0
+        remark = ''
+        for tmi in range(tmi_max):
+            compare_flag = 0
+            if not_entry_lp == 1:
+                remark = 'not entry lp mode'
+                self.log_display_record(remark)
+                break
+            for times in range(20):
+                if compare_flag == 1:
+                    break
+                elif times == 19:
+                    not_entry_lp = 1
+                    break
+                # pre-send pkt and get fc
+                self.auto_ftm_tx_test_pkt(tmi)
+                # delay 0.5s and get correct fc
+                time.sleep(0.5)
+                # get config fc
+                self.pack_compare = self.auto_ftm_get_fc_info()
+
+                self.compare_queue.queue.clear()
+                self.data_record_flag = 1
+                self.auto_ftm_tx_test_pkt(tmi)
+
+                try:
+                    str = self.compare_queue.get(timeout=2)
+                except:
+                    str = 'compare_fail'
+
+                if str == 'compare_pass':
+                    compare_cnt += 1
+                    compare_flag = 1
+                    str_l = "tmi %d loopback test success." % tmi
+                    self.log_display_record(str_l)
+                elif str == 'compare_fail':
+                    str_l = "tmi %d loopback test fail." % tmi
+                    self.log_display_record(str_l)
+                else:
+                    str_l = "other fail! %d" % tmi
+                    self.log_display_record(str_l)
+                remark += str_l
+                self.data_record_flag = 0
+                time.sleep(0.5)
+            # set pbar value
+            pbar_value += pbar_step
+            self.auto_pbar_set(pbar_value)
+
+        return [compare_cnt, remark]
+
     # sta tmi scan band0
     def sta_tmi_scan_band0(self):
+        self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
         patch ='.\LOG\cert_log\协议一致性'
         if not os.path.exists(patch):
@@ -559,95 +749,118 @@ class ftm_auto():
         self.record_log(hplc_cert.debug_leave.LOG_DEBUG, '*' * 20 + 'sta tmi 遍历 band0' + '*' * 20)
         # 获取开始时间
         t_start = datetime.now()
-        # start run
-        str_ftm = " 台体开始上电"
-        self.log_display_record(str_ftm)
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
 
-        str_ftm = " 初始化台体"
-        self.log_display_record(str_ftm)
-        # proto = sg, band = 2
-        self.auto_init_ftm(PROTO_MARCO.PROTO_SG, BAND_ID_MARCO.PROTO_BAND_ID_2)
+        compare_cnt, remark = self.loopback_handle("TMI遍历 STA band0", BAND_ID_MARCO.PROTO_BAND_ID_0, TMI_MARCO.TMI_MAX)
 
-        str_ftm = " 模块上电"
-        self.log_display_record(str_ftm)
-        self.switch_ser(POWER_MARCO.POWER_ON)
-        time.sleep(5)
-
-        str_ftm = " 开始发送设置band的包"
-        self.log_display_record(str_ftm)
-        self.auto_ftm_set_band(PROTO_MARCO.PROTO_SG, BAND_ID_MARCO.PROTO_BAND_ID_1)
-        # proto = sg, band = 0
-        self.auto_ftm_set_self_band(PROTO_MARCO.PROTO_SG, BAND_ID_MARCO.PROTO_BAND_ID_1)
-
-        str_ftm = " 开始发送进入回传模式的包"
-        self.log_display_record(str_ftm)
-        self.auto_ftm_entry_mode(PROTO_MARCO.PROTO_SG, MODE_MARCO.CERT_TEST_CMD_ENTER_PHY_LP)
-
-        str_ftm = " 开始发送测试包"
-        self.log_display_record(str_ftm)
-        self.auto_ftm_tx_test_pkt(TMI_MARCO.TMI_4)
-        # entry rx mode
-        self.auto_ftm_rx_config()
-
-        compare_cnt, compare_rate, fail_cnt = 0, 0, 0
-        # send test pkt
-        for i in range(1):
-            # rough tuning is no longer pass, into next stage
-            if i - compare_cnt > 10:
-                break
-            self.compare_queue.queue.clear()
-            self.auto_ftm_tx_test_pkt(TMI_MARCO.TMI_4)
-            try:
-                str = self.compare_queue.get(timeout=50)
-            except:
-                str = 'compare_fail'
-
-            if str == 'compare_pass':
-                compare_cnt += 1
-                self.log_display_record("receive success cnt:%d" % compare_cnt)
-            elif str == 'compare_fail':
-                fail_cnt += 1
-                self.log_display_record("compare fail! %d" % fail_cnt)
-            else:
-                self.log_display_record("other fail! %d" % i)
-            time.sleep(0.5)
+        if compare_cnt == TMI_MARCO.TMI_MAX:
+            result = 'pass'
+        else:
+            result = 'fail'
 
         # 获取结束时间
         t_end = datetime.now()
         dlt_t = t_end - t_start
-        self.table.signal2emit(["TMI遍历 STA band0", '%s' % dlt_t, "pass", "ok"])
+        self.table.signal2emit(["TMI遍历 STA band0", '%s' % dlt_t, result, remark])
+        self.log_display_record("TMI遍历 STA band0: %s" % remark)
+        self.log_display_record("测试结束, 结果: %s " % result)
+        self.auto_pbar_set(100)
         self.switch_ser(POWER_MARCO.POWER_DOWN)
 
     # sta tmi scan band1
     def sta_tmi_scan_band1(self):
-        t1 = datetime.now()
-        time.sleep(2)
-        print(sys._getframe().f_code.co_name)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["TMI遍历 STA band1", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch ='.\LOG\cert_log\协议一致性'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        filename =patch + '\sta_tmi_遍历_band1_' + file_time + '.log'
+        self.filename_record = filename
+        f = codecs.open(filename, mode='w', encoding='utf-8')
+        f.write('*'*20 + 'sta tmi 遍历 band1' + '*'*20 + '\n')
+        f.close()
+        self.record_log(hplc_cert.debug_leave.LOG_DEBUG, '*' * 20 + 'sta tmi 遍历 band1' + '*' * 20)
+        # 获取开始时间
+        t_start = datetime.now()
+
+        compare_cnt, remark = self.loopback_handle("TMI遍历 STA band1", BAND_ID_MARCO.PROTO_BAND_ID_1, TMI_MARCO.TMI_MAX)
+
+        if compare_cnt == TMI_MARCO.TMI_MAX:
+            result = 'pass'
+        else:
+            result = 'fail'
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["TMI遍历 STA band1", '%s' % dlt_t, result, remark])
+        self.log_display_record("TMI遍历 STA band1: %s" % remark)
+        self.log_display_record("测试结束, 结果: %s " % result)
+        self.auto_pbar_set(100)
+        self.switch_ser(POWER_MARCO.POWER_DOWN)
 
     # sta tmi scan band2
     def sta_tmi_scan_band2(self):
-        t1 = datetime.now()
-        time.sleep(3)
-        print(sys._getframe().f_code.co_name)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["TMI遍历 STA band2", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch ='.\LOG\cert_log\协议一致性'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        filename =patch + '\sta_tmi_遍历_band2_' + file_time + '.log'
+        self.filename_record = filename
+        f = codecs.open(filename, mode='w', encoding='utf-8')
+        f.write('*'*20 + 'sta tmi 遍历 band2' + '*'*20 + '\n')
+        f.close()
+        self.record_log(hplc_cert.debug_leave.LOG_DEBUG, '*' * 20 + 'sta tmi 遍历 band2' + '*' * 20)
+        # 获取开始时间
+        t_start = datetime.now()
+
+        compare_cnt, remark = self.loopback_handle("TMI遍历 STA band2", BAND_ID_MARCO.PROTO_BAND_ID_2, TMI_MARCO.TMI_MAX)
+
+        if compare_cnt == TMI_MARCO.TMI_MAX:
+            result = 'pass'
+        else:
+            result = 'fail'
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["TMI遍历 STA band2", '%s' % dlt_t, result, remark])
+        self.log_display_record("TMI遍历 STA band2: %s" % remark)
+        self.log_display_record("测试结束, 结果: %s " % result)
+        self.auto_pbar_set(100)
+        self.switch_ser(POWER_MARCO.POWER_DOWN)
 
     # sta tmi scan band3
     def sta_tmi_scan_band3(self):
-        t1 = datetime.now()
-        time.sleep(3)
-        print(sys._getframe().f_code.co_name)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["TMI遍历 STA band3", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch ='.\LOG\cert_log\协议一致性'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        filename =patch + '\sta_tmi_遍历_band3_' + file_time + '.log'
+        self.filename_record = filename
+        f = codecs.open(filename, mode='w', encoding='utf-8')
+        f.write('*'*20 + 'sta tmi 遍历 band3' + '*'*20 + '\n')
+        f.close()
+        self.record_log(hplc_cert.debug_leave.LOG_DEBUG, '*' * 20 + 'sta tmi 遍历 band3' + '*' * 20)
+        # 获取开始时间
+        t_start = datetime.now()
+
+        compare_cnt, remark = self.loopback_handle("TMI遍历 STA band3", BAND_ID_MARCO.PROTO_BAND_ID_3, TMI_MARCO.TMI_MAX)
+
+        if compare_cnt == TMI_MARCO.TMI_MAX:
+            result = 'pass'
+        else:
+            result = 'fail'
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["TMI遍历 STA band3", '%s' % dlt_t, result, remark])
+        self.log_display_record("TMI遍历 STA band3: %s" % remark)
+        self.log_display_record("测试结束, 结果: %s " % result)
+        self.auto_pbar_set(100)
+        self.switch_ser(POWER_MARCO.POWER_DOWN)
 
     def overnight_test(self, str_info, band_id):
 
@@ -730,43 +943,131 @@ class ftm_auto():
 
     # cco tmi scan band0
     def cco_tmi_scan_band0(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        print(sys._getframe().f_code.co_name)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["TMI遍历 CCO band0", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch ='.\LOG\cert_log\协议一致性'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        filename =patch + '\cco_tmi_遍历_band0_' + file_time + '.log'
+        self.filename_record = filename
+        f = codecs.open(filename, mode='w', encoding='utf-8')
+        f.write('*'*20 + 'cco tmi 遍历 band0' + '*'*20 + '\n')
+        f.close()
+        self.record_log(hplc_cert.debug_leave.LOG_DEBUG, '*' * 20 + 'cco tmi 遍历 band0' + '*' * 20)
+        # 获取开始时间
+        t_start = datetime.now()
+
+        compare_cnt, remark = self.loopback_handle("TMI遍历 CCO band0", BAND_ID_MARCO.PROTO_BAND_ID_0, TMI_MARCO.TMI_MAX)
+
+        if compare_cnt == TMI_MARCO.TMI_MAX:
+            result = 'pass'
+        else:
+            result = 'fail'
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["TMI遍历 CCO band0", '%s' % dlt_t, result, remark])
+        self.log_display_record("TMI遍历 CCO band0: %s" % remark)
+        self.log_display_record("测试结束, 结果: %s " % result)
+        self.auto_pbar_set(100)
+        self.switch_ser(POWER_MARCO.POWER_DOWN)
 
     # cco tmi scan band1
     def cco_tmi_scan_band1(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        print(sys._getframe().f_code.co_name)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["TMI遍历 CCO band1", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch ='.\LOG\cert_log\协议一致性'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        filename =patch + '\cco_tmi_遍历_band1_' + file_time + '.log'
+        self.filename_record = filename
+        f = codecs.open(filename, mode='w', encoding='utf-8')
+        f.write('*'*20 + 'cco tmi 遍历 band1' + '*'*20 + '\n')
+        f.close()
+        self.record_log(hplc_cert.debug_leave.LOG_DEBUG, '*' * 20 + 'cco tmi 遍历 band1' + '*' * 20)
+        # 获取开始时间
+        t_start = datetime.now()
+
+        compare_cnt, remark = self.loopback_handle("TMI遍历 CCO band1", BAND_ID_MARCO.PROTO_BAND_ID_1, TMI_MARCO.TMI_MAX)
+
+        if compare_cnt == TMI_MARCO.TMI_MAX:
+            result = 'pass'
+        else:
+            result = 'fail'
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["TMI遍历 CCO band1", '%s' % dlt_t, result, remark])
+        self.log_display_record("TMI遍历 CCO band1: %s" % remark)
+        self.log_display_record("测试结束, 结果: %s " % result)
+        self.auto_pbar_set(100)
+        self.switch_ser(POWER_MARCO.POWER_DOWN)
 
     # cco tmi scan band2
     def cco_tmi_scan_band2(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        print(sys._getframe().f_code.co_name)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["TMI遍历 CCO band2", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch ='.\LOG\cert_log\协议一致性'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        filename =patch + '\cco_tmi_遍历_band2_' + file_time + '.log'
+        self.filename_record = filename
+        f = codecs.open(filename, mode='w', encoding='utf-8')
+        f.write('*'*20 + 'cco tmi 遍历 band2' + '*'*20 + '\n')
+        f.close()
+        self.record_log(hplc_cert.debug_leave.LOG_DEBUG, '*' * 20 + 'cco tmi 遍历 band2' + '*' * 20)
+        # 获取开始时间
+        t_start = datetime.now()
+
+        compare_cnt, remark = self.loopback_handle("TMI遍历 CCO band2", BAND_ID_MARCO.PROTO_BAND_ID_2, TMI_MARCO.TMI_MAX)
+
+        if compare_cnt == TMI_MARCO.TMI_MAX:
+            result = 'pass'
+        else:
+            result = 'fail'
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["TMI遍历 CCO band2", '%s' % dlt_t, result, remark])
+        self.log_display_record("TMI遍历 CCO band2: %s" % remark)
+        self.log_display_record("测试结束, 结果: %s " % result)
+        self.auto_pbar_set(100)
+        self.switch_ser(POWER_MARCO.POWER_DOWN)
 
     # cco tmi scan band3
     def cco_tmi_scan_band3(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        print(sys._getframe().f_code.co_name)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["TMI遍历 CCO band3", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch ='.\LOG\cert_log\协议一致性'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        filename =patch + '\cco_tmi_遍历_band3_' + file_time + '.log'
+        self.filename_record = filename
+        f = codecs.open(filename, mode='w', encoding='utf-8')
+        f.write('*'*20 + 'cco tmi 遍历 band3' + '*'*20 + '\n')
+        f.close()
+        self.record_log(hplc_cert.debug_leave.LOG_DEBUG, '*' * 20 + 'cco tmi 遍历 band3' + '*' * 20)
+        # 获取开始时间
+        t_start = datetime.now()
+
+        compare_cnt, remark = self.loopback_handle("TMI遍历 CCO band3", BAND_ID_MARCO.PROTO_BAND_ID_3, TMI_MARCO.TMI_MAX)
+
+        if compare_cnt == TMI_MARCO.TMI_MAX:
+            result = 'pass'
+        else:
+            result = 'fail'
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["TMI遍历 CCO band3", '%s' % dlt_t, result, remark])
+        self.log_display_record("TMI遍历 CCO band3: %s" % remark)
+        self.log_display_record("测试结束, 结果: %s " % result)
+        self.auto_pbar_set(100)
+        self.switch_ser(POWER_MARCO.POWER_DOWN)
 
     # cco tonemask band0
     def cco_tonemask_band0(self):

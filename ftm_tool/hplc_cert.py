@@ -176,7 +176,9 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         # power on serial port open
         self.power_on_serial_port_open()
         # tt serial port open
-        self.auto.rx_data_ser_open()
+        self.auto.tt_ser_open()
+        # lp serial port open
+        self.auto.lp_ser_open()
         # att control serial port open
         self.auto.sig_gen.att_control_ser_open()
         # open signal generator
@@ -189,7 +191,7 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
             self.auto.stop_thread()
             self.ser.close()
             self.switch_ser.close()
-            self.auto.rx_data_ser.close()
+            self.auto.tt_ser.close()
             self.auto.att_control_ser.close()
         except:
             self.record_log(debug_leave.LOG_ERROR, "关闭串口出错！")
@@ -241,10 +243,17 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
 
     # hwq_cfg
     def hwq_cfg_func(self):
+        #self.auto.auto_ftm_set_self_band(0, 0)
+        #self.auto.auto_init_ftm(0, 0)
+        #self.auto.auto_ftm_rx_config()
+        self.auto.auto_ftm_tx_test_pkt(4)
 
+
+        '''
         self.timer = QTimer(self)  # 初始化一个定时器
         self.timer.timeout.connect(self.auto.test_case)  # 计时结束调用operate()方法
         self.timer.start(20*1000)  # 设置计时间隔并启动
+        '''
 
 
     def readfile_test(self):

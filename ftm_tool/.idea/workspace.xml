@@ -2,11 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c97c0122-51a3-426c-ac6f-5199f6ea3606" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crc_calu.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis_tool/log_analysis_entry_cert_mode/session_2019_09_09_Serial-COM9-173044 - 副本.log" beforeDir="false" afterPath="$PROJECT_DIR$/analysis_tool/log_analysis_entry_cert_mode/session_2019_09_09_Serial-COM9-173044 - 副本.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analysis_tool/log_analysis_entry_cert_mode/Statistics_entry_cert_mode.py" beforeDir="false" afterPath="$PROJECT_DIR$/analysis_tool/log_analysis_entry_cert_mode/Statistics_entry_cert_mode.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/cert_config.ini" beforeDir="false" afterPath="$PROJECT_DIR$/config/cert_config.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crc_calu.py" beforeDir="false" afterPath="$PROJECT_DIR$/crc_calu.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ftm_auto.py" beforeDir="false" afterPath="$PROJECT_DIR$/ftm_auto.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hplc_cert.py" beforeDir="false" afterPath="$PROJECT_DIR$/hplc_cert.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,7 +18,7 @@
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/ftm_tool$RigolTest__1_.coverage" NAME="RigolTest (1) Coverage Results" MODIFIED="1567491521727" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../信号发生器/20190830143631_5d68c3ef89e05/python" />
     <SUITE FILE_PATH="coverage/ftm_tool$RigolTest.coverage" NAME="RigolTest Coverage Results" MODIFIED="1567417724168" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../20190830143631_5d68c3ef89e05/python" />
-    <SUITE FILE_PATH="coverage/ftm_tool$ftm_tool.coverage" NAME="ftm_tool Coverage Results" MODIFIED="1568028233034" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ftm_tool$ftm_tool.coverage" NAME="ftm_tool Coverage Results" MODIFIED="1568115263516" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ftm_tool$test1.coverage" NAME="test1 Coverage Results" MODIFIED="1567148499889" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../test1" />
     <SUITE FILE_PATH="coverage/ftm_tool$test.coverage" NAME="test Coverage Results" MODIFIED="1567163640794" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../test3" />
   </component>
@@ -26,8 +27,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/hplc_cert.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1312">
-              <caret line="206" column="36" selection-start-line="206" selection-start-column="36" selection-end-line="206" selection-end-column="36" />
+            <state relative-caret-position="162">
+              <caret line="172" column="24" lean-forward="true" selection-start-line="172" selection-start-column="24" selection-end-line="172" selection-end-column="24" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -38,8 +39,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ftm_auto.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="436">
-              <caret line="357" column="32" lean-forward="true" selection-start-line="357" selection-start-column="32" selection-end-line="357" selection-end-column="32" />
+            <state relative-caret-position="382">
+              <caret line="1038" lean-forward="true" selection-start-line="1038" selection-end-line="1038" />
               <folding>
                 <element signature="e#24#38#0" expanded="true" />
               </folding>
@@ -50,8 +51,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/crc_calu.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="912">
-              <caret line="48" column="14" selection-start-line="48" selection-start-column="6" selection-end-line="48" selection-end-column="14" />
+            <state relative-caret-position="342">
+              <caret line="18" column="38" lean-forward="true" selection-start-line="18" selection-start-column="38" selection-end-line="18" selection-end-column="38" />
             </state>
           </provider>
         </entry>
@@ -71,8 +72,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ui2.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5643">
-              <caret line="298" column="19" selection-start-line="298" selection-start-column="19" selection-end-line="298" selection-end-column="19" />
+            <state relative-caret-position="342">
+              <caret line="18" column="4" selection-start-line="18" selection-start-column="4" selection-end-line="18" selection-end-column="4" />
               <folding>
                 <element signature="e#24#34#0" expanded="true" />
               </folding>
@@ -83,11 +84,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/signal_generator.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret selection-end-column="13" />
-              <folding>
-                <element signature="e#15#26#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="95">
+              <caret line="5" column="13" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/analysis_tool/log_analysis_entry_cert_mode/Statistics_entry_cert_mode.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="551">
+              <caret line="29" column="15" selection-start-line="29" selection-start-column="15" selection-end-line="29" selection-end-column="15" />
             </state>
           </provider>
         </entry>
@@ -103,21 +110,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>collect_info_from_ser</find>
-      <find>log_display_record</find>
-      <find>BAND_ID_MARCO</find>
-      <find>pack_compare</find>
-      <find>compare_cnt</find>
-      <find>compare_rate</find>
-      <find>last_value</find>
-      <find>auto_ftm_tx_test_pkt</find>
-      <find>compare_flag</find>
-      <find>success_rate</find>
-      <find>PASS_THRESHOLD</find>
-      <find>att_pass_threshold</find>
-      <find>rx_data_handle</find>
-      <find>table_set_item</find>
-      <find>start_rx_thread</find>
       <find>lcd_timer</find>
       <find>signal2emit</find>
       <find>auto_handle_func</find>
@@ -133,6 +125,21 @@
       <find>att_success_rate</find>
       <find>iot_crc24_table</find>
       <find>crc24</find>
+      <find>compare_queue</find>
+      <find>auto_ftm_rx_config</find>
+      <find>PROTO_BAND_ID_1</find>
+      <find>data_record_flag</find>
+      <find>pack_info</find>
+      <find>pack_compare</find>
+      <find>auto_ftm_tx_test_pkt</find>
+      <find>rx_data_ser</find>
+      <find>rx_data_config</find>
+      <find>tt_ser</find>
+      <find>start_rx_thread</find>
+      <find>rx_c_thread</find>
+      <find>stop_thread</find>
+      <find>rx_f_thread</find>
+      <find>rx_data_handle</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -152,14 +159,15 @@
         <option value="$PROJECT_DIR$/../test1/test1.py" />
         <option value="$PROJECT_DIR$/pyserial_demo.py" />
         <option value="$PROJECT_DIR$/../test1/Statistics_entry_cert_mode.py" />
+        <option value="$PROJECT_DIR$/analysis_tool/log_analysis_entry_cert_mode/Statistics_entry_cert_mode.py" />
         <option value="$PROJECT_DIR$/crc_calu.py" />
+        <option value="$PROJECT_DIR$/hplc_cert.py" />
         <option value="$PROJECT_DIR$/ftm_auto.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="2229" />
-    <option name="y" value="161" />
+    <option name="x" value="1934" />
     <option name="width" value="1792" />
     <option name="height" value="1040" />
   </component>
@@ -188,6 +196,17 @@
               <item name="analysis_tool" type="462c0819:PsiDirectoryNode" />
               <item name="log_analysis_entry_cert_mode" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="ftm_tool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ftm_tool" type="462c0819:PsiDirectoryNode" />
+              <item name="ftm_auto.py" type="8704e2dd:PyFileNode" />
+            </path>
+            <path>
+              <item name="ftm_tool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ftm_tool" type="462c0819:PsiDirectoryNode" />
+              <item name="ftm_auto.py" type="8704e2dd:PyFileNode" />
+              <item name="ftm_auto" type="dd8bbb05:PyElementNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -196,7 +215,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/pyserial_demo.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/hplc_cert.py" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="settings.editor.selected.configurable" value="reference.idesettings.quicklists" />
@@ -279,7 +298,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="D:\document\py_test\ftm_tool\hplc_cert.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/hplc_cert.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -332,6 +351,13 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <list>
+      <item itemvalue="Python.ftm_tool" />
+      <item itemvalue="Python.test" />
+      <item itemvalue="Python.RigolTest" />
+      <item itemvalue="Python.RigolTest (1)" />
+      <item itemvalue="Python.test1" />
+    </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.RigolTest (1)" />
@@ -372,23 +398,26 @@
       <workItem from="1567746877689" duration="4508000" />
       <workItem from="1567817938317" duration="12463000" />
       <workItem from="1567998477085" duration="2883000" />
-      <workItem from="1568027658763" duration="802000" />
+      <workItem from="1568027658763" duration="1745000" />
+      <workItem from="1568086170864" duration="541000" />
+      <workItem from="1568100415331" duration="14858000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="335446000" />
+    <option name="totallyTimeSpent" value="351788000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1912" y="-8" width="2576" height="1416" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1875" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49960938" visible="true" weight="0.303681" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49960938" weight="0.31494254" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49960938" weight="0.303681" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49960938" visible="true" weight="0.25383437" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -405,6 +434,30 @@
       <window_info anchor="right" id="SciView" order="4" />
       <window_info anchor="right" id="Database" order="5" />
     </layout>
+    <layout-to-restore>
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1875" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49960938" weight="0.303681" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49960938" visible="true" weight="0.25383437" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Version Control" order="8" />
+      <window_info anchor="bottom" id="Database Changes" order="9" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50039065" side_tool="true" weight="0.33716476" />
+      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.49960938" weight="0.46560848" />
+      <window_info anchor="bottom" id="Python Console" order="12" />
+      <window_info anchor="right" id="Coverage" order="0" side_tool="true" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="1" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="2" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="3" weight="0.25" />
+      <window_info anchor="right" id="SciView" order="4" />
+      <window_info anchor="right" id="Database" order="5" />
+    </layout-to-restore>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
@@ -503,13 +556,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python37/Lib/threading.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="271">
-          <caret line="869" selection-start-line="869" selection-end-line="869" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python37/Lib/site-packages/serial/serialutil.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="200">
@@ -575,47 +621,58 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/signal_generator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="95">
+          <caret line="5" column="13" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/analysis_tool/log_analysis_entry_cert_mode/Statistics_entry_cert_mode.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="551">
+          <caret line="29" column="15" selection-start-line="29" selection-start-column="15" selection-end-line="29" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ui2.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5643">
-          <caret line="298" column="19" selection-start-line="298" selection-start-column="19" selection-end-line="298" selection-end-column="19" />
+        <state relative-caret-position="342">
+          <caret line="18" column="4" selection-start-line="18" selection-start-column="4" selection-end-line="18" selection-end-column="4" />
           <folding>
             <element signature="e#24#34#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python37/Lib/threading.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="271">
+          <caret line="869" selection-start-line="869" selection-end-line="869" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/hplc_cert.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1312">
-          <caret line="206" column="36" selection-start-line="206" selection-start-column="36" selection-end-line="206" selection-end-column="36" />
+        <state relative-caret-position="162">
+          <caret line="172" column="24" lean-forward="true" selection-start-line="172" selection-start-column="24" selection-end-line="172" selection-end-column="24" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/signal_generator.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret selection-end-column="13" />
-          <folding>
-            <element signature="e#15#26#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/crc_calu.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="912">
-          <caret line="48" column="14" selection-start-line="48" selection-start-column="6" selection-end-line="48" selection-end-column="14" />
+        <state relative-caret-position="342">
+          <caret line="18" column="38" lean-forward="true" selection-start-line="18" selection-start-column="38" selection-end-line="18" selection-end-column="38" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ftm_auto.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="436">
-          <caret line="357" column="32" lean-forward="true" selection-start-line="357" selection-start-column="32" selection-end-line="357" selection-end-column="32" />
+        <state relative-caret-position="382">
+          <caret line="1038" lean-forward="true" selection-start-line="1038" selection-end-line="1038" />
           <folding>
             <element signature="e#24#38#0" expanded="true" />
           </folding>

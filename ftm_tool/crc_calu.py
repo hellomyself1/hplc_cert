@@ -1,4 +1,5 @@
 #coding=utf-8
+import codecs
 
 iot_crc24_table = [
     0x00000000, 0x00848401, 0x00850801, 0x00018c00, 0x00861001, 0x00029400,
