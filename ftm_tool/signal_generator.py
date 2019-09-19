@@ -56,6 +56,11 @@ class signal_generator:
         self.inst.write("*IDN?")
         name = self.inst.read()
         self.record_log(hplc_cert.debug_leave.LOG_DEBUG, name)
+        # 设置输出阻抗为50Ω
+        self.inst.write(":OUTP1:LOAD 50")
+
+    def close_signal_generator(self):
+        self.inst.write(":OUTPut1:STATe OFF")
 
     # white noise
     def sg_set_white_noise(self):
@@ -70,13 +75,15 @@ class signal_generator:
         white_noise_cfg = ''
         if config_tmp.has_option("signal_generator", "white_noise"):
             white_noise_cfg = config_tmp.get("signal_generator", "white_noise")
-
+        print(white_noise_cfg)
+        # set channel 1, nuit dbm
+        self.inst.write("SOUR1:VOLT:UNIT DBM")
         self.inst.write(":SOUR1:APPL:NOISE " + white_noise_cfg)
         self.inst.write(":SOUR1:APPL?")
         noise_cfg = self.inst.read()
         self.record_log(hplc_cert.debug_leave.LOG_DEBUG, noise_cfg)
         # output
-        self.inst.write(":OUTPut:STATe ON")
+        self.inst.write(":OUTPut1:STATe ON")
 
     # pulse
     def sg_set_pulse(self):
@@ -92,10 +99,12 @@ class signal_generator:
         if config_tmp.has_option("signal_generator", "pulse_cfg"):
             pulse_cfg = config_tmp.get("signal_generator", "pulse_cfg")
 
+        # set channel 1, nuit dbm
+        self.inst.write("SOUR1:VOLT:UNIT VPP")
         self.inst.write(":SOUR1:APPL:PULS " + pulse_cfg)
         self.inst.write(":SOUR1:APPL?")
         noise_cfg = 'pulse config:' + self.inst.read()
-        print(noise_cfg)
+
         self.record_log(hplc_cert.debug_leave.LOG_DEBUG, noise_cfg)
 
         pulse_width = ''
@@ -109,7 +118,7 @@ class signal_generator:
         print(width)
         self.record_log(hplc_cert.debug_leave.LOG_DEBUG, width)
         # output
-        self.inst.write(":OUTPut:STATe ON")
+        self.inst.write(":OUTPut1:STATe ON")
 
     # spur
     def sg_set_sin(self, int_value):
@@ -120,6 +129,8 @@ class signal_generator:
             config_tmp.read(config_file, encoding="utf-8")
         except Exception:
             print("file open fail")
+        # set channel 1, nuit dbm
+        self.inst.write("SOUR1:VOLT:UNIT DBM")
         # band1
         if int_value == NARROW_MARCO.NARROW_1M:
             sin_cfg_1M = ''
@@ -131,6 +142,8 @@ class signal_generator:
             sin_cfg = 'sin config 1M:' + self.inst.read()
             print(sin_cfg)
             self.record_log(hplc_cert.debug_leave.LOG_DEBUG, sin_cfg)
+            # output
+            self.inst.write(":OUTPut1:STATe ON")
 
         elif int_value == NARROW_MARCO.NARROW_3M:
             sin_cfg_3M = ''
@@ -142,6 +155,8 @@ class signal_generator:
             sin_cfg = 'sin config 3M:' + self.inst.read()
             print(sin_cfg)
             self.record_log(hplc_cert.debug_leave.LOG_DEBUG, sin_cfg)
+            # output
+            self.inst.write(":OUTPut1:STATe ON")
         elif int_value == NARROW_MARCO.NARROW_6M:
             sin_cfg_6M = ''
             if config_tmp.has_option("signal_generator", "sin_cfg_6M"):
@@ -152,6 +167,8 @@ class signal_generator:
             sin_cfg = 'sin config 6M:' + self.inst.read()
             print(sin_cfg)
             self.record_log(hplc_cert.debug_leave.LOG_DEBUG, sin_cfg)
+            # output
+            self.inst.write(":OUTPut1:STATe ON")
         # band2
         elif int_value == NARROW_MARCO.NARROW_500K:
             sin_cfg_500k = ''
@@ -163,6 +180,8 @@ class signal_generator:
             sin_cfg = 'sin config 500k:' + self.inst.read()
             print(sin_cfg)
             self.record_log(hplc_cert.debug_leave.LOG_DEBUG, sin_cfg)
+            # output
+            self.inst.write(":OUTPut1:STATe ON")
         elif int_value == NARROW_MARCO.NARROW_2M:
             sin_cfg_2M = ''
             if config_tmp.has_option("signal_generator", "sin_cfg_2M"):
@@ -173,6 +192,8 @@ class signal_generator:
             sin_cfg = 'sin config 2M:' + self.inst.read()
             print(sin_cfg)
             self.record_log(hplc_cert.debug_leave.LOG_DEBUG, sin_cfg)
+            # output
+            self.inst.write(":OUTPut1:STATe ON")
         elif int_value == NARROW_MARCO.NARROW_5M:
             sin_cfg_5M = ''
             if config_tmp.has_option("signal_generator", "sin_cfg_5M"):
@@ -183,12 +204,14 @@ class signal_generator:
             sin_cfg = 'sin config 5M:' + self.inst.read()
             print(sin_cfg)
             self.record_log(hplc_cert.debug_leave.LOG_DEBUG, sin_cfg)
+            # output
+            self.inst.write(":OUTPut1:STATe ON")
         else:
             log_i = "this narrow is not support:%d" % int_value
             print(log_i)
             self.record_log(hplc_cert.debug_leave.LOG_ERROR, log_i)
 
-    def att_get_init_config(self):
+    def att_get_init_config(self, test_id):
         # config
         config_tmp = configparser.ConfigParser()
         config_file = ".\config\cert_config.ini"
@@ -196,21 +219,27 @@ class signal_generator:
             config_tmp.read(config_file, encoding="utf-8")
         except Exception:
             print("file open fail")
+        if test_id == 0:
+            section = "att_config"
+        else:
+            section = "write_pulse_spur_config"
         # line att
         line_att = 0
-        if config_tmp.has_option("att_config", "line_att"):
-            line_att = int(config_tmp.get("att_config", "line_att"))
+        if config_tmp.has_option(section, "line_att"):
+            line_att = int(config_tmp.get(section, "line_att"))
 
         # success rate
         att_success_rate = 90
-        if config_tmp.has_option("att_config", "att_success_rate"):
-            att_success_rate = int(config_tmp.get("att_config", "att_success_rate"))
+        if config_tmp.has_option(section, "att_success_rate"):
+            att_success_rate = int(config_tmp.get(section, "att_success_rate"))
 
         # pass threshold
         att_pass_threshold = 85
-        if config_tmp.has_option("att_config", "att_pass_threshold"):
-            att_pass_threshold = int(config_tmp.get("att_config", "att_pass_threshold"))
-
+        if config_tmp.has_option(section, "att_pass_threshold"):
+            att_pass_threshold = int(config_tmp.get(section, "att_pass_threshold"))
+        print(line_att)
+        print(att_success_rate)
+        print(att_pass_threshold)
         return [line_att, att_success_rate, att_pass_threshold]
 
     def att_control_ser_open(self):
@@ -259,5 +288,7 @@ class signal_generator:
         str_set_cmd = 'SA1 %d' % att_value
         self.att_control_send_cmd(str_set_cmd)
         # TODO: need closed-loop test. read and check
+
+
 
 

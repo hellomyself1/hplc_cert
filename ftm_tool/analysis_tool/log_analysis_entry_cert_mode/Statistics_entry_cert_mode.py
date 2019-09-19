@@ -32,7 +32,7 @@ class read_file_and_handle:
 
 if __name__ == "__main__":
 
-    file_name = "D:\secureCRT\logs\session_2019_09_10_Serial-COM9-000002 - 副本.log"
+    file_name = "D:\secureCRT\logs\session_2019_09_06_Serial-COM9-000000_复线.log"
     f = read_file_and_handle(file_name)
     f.read_file()
     print('all test times:%d' % f.start_flag)

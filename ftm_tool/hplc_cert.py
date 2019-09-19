@@ -42,10 +42,11 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
 
         self.tree = ui2.treeWidget_class(self.treeWidget, self.tableWidget, self.record_log)
         self.user = ftm_cmd.ftm_tool(self.record_log)
-        self.auto = ftm_auto.ftm_auto(self.tree.tw, self.signal_txt_emit, self.switch_send_cmd,
-                                      self.user, self.record_log,
+        self.auto = ftm_auto.ftm_auto(self.tree.tw, self.signal_txt_emit, self.dut_switch_send_cmd,
+                                      self.ftm_switch_send_cmd, self.user, self.record_log,
                                       self.lcdNumber, self.signal_pbar_emit)
-        self.switch_ser = serial.Serial()
+        self.dut_switch_ser = serial.Serial()
+        self.ftm_switch_ser = serial.Serial()
 
     def init(self):
 
@@ -64,6 +65,7 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         self.smoe_test.clicked.connect(self.some_test_func)
 
         self.pushButton_start.clicked.connect(self.test_start)
+        self.pushButton_stop.clicked.connect(self.test_stop)
 
         # connect function
         # pbar
@@ -142,39 +144,68 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
             self.open_button.setEnabled(False)
             self.close_button.setEnabled(True)
 
-    def power_on_serial_port_open(self):
-        if self.config.has_option("switch_config", "s3_serial_port"):
-            self.switch_ser.port = self.config.get("switch_config", "s3_serial_port")
-        if self.config.has_option("switch_config", "s3_baudrate"):
-            self.switch_ser.baudrate = int(self.config.get("switch_config", "s3_baudrate"))
-        if self.config.has_option("switch_config", "s3_bytesize"):
-            self.switch_ser.bytesize = int(self.config.get("switch_config", "s3_bytesize"))
-        if self.config.has_option("switch_config", "s3_stopbits"):
-            self.switch_ser.stopbits = int(self.config.get("switch_config", "s3_stopbits"))
-        if self.config.has_option("switch_config", "s3_parity"):
-            self.switch_ser.parity = self.config.get("switch_config", "s3_parity")
+    def dut_power_on_serial_port_open(self):
+        if self.config.has_option("dut_switch_config", "s3_serial_port"):
+            self.dut_switch_ser.port = self.config.get("dut_switch_config", "s3_serial_port")
+        if self.config.has_option("dut_switch_config", "s3_baudrate"):
+            self.dut_switch_ser.baudrate = int(self.config.get("dut_switch_config", "s3_baudrate"))
+        if self.config.has_option("dut_switch_config", "s3_bytesize"):
+            self.dut_switch_ser.bytesize = int(self.config.get("dut_switch_config", "s3_bytesize"))
+        if self.config.has_option("dut_switch_config", "s3_stopbits"):
+            self.dut_switch_ser.stopbits = int(self.config.get("dut_switch_config", "s3_stopbits"))
+        if self.config.has_option("dut_switch_config", "s3_parity"):
+            self.dut_switch_ser.parity = self.config.get("dut_switch_config", "s3_parity")
 
-        self.record_log(debug_leave.LOG_DEBUG, 'power on serial config ' + self.switch_ser.port +
-                        ' %s' % self.switch_ser.baudrate + ' %s' % self.switch_ser.bytesize +
-                        ' %s' % self.switch_ser.stopbits + ' ' + self.switch_ser.parity)
+        self.record_log(debug_leave.LOG_DEBUG, 'dut power on serial config ' + self.dut_switch_ser.port +
+                        ' %s' % self.dut_switch_ser.baudrate + ' %s' % self.dut_switch_ser.bytesize +
+                        ' %s' % self.dut_switch_ser.stopbits + ' ' + self.dut_switch_ser.parity)
 
-        if self.switch_ser.isOpen():
-            self.record_log(debug_leave.LOG_DEBUG, "power on serial open successed")
+        if self.dut_switch_ser.isOpen():
+            self.record_log(debug_leave.LOG_DEBUG, "dut power on serial open successed")
 
         try:
-            self.switch_ser.open()
-            self.record_log(debug_leave.LOG_ERROR, "power on serial open successed!")
+            self.dut_switch_ser.open()
+            self.record_log(debug_leave.LOG_ERROR, "dut power on serial open successed!")
         except:
-            QMessageBox.critical(self, "Port Error", "power on串口不能被打开！")
-            self.record_log(debug_leave.LOG_ERROR, "power on 串口不能被打开！")
+            QMessageBox.critical(self, "Port Error", "dut power on串口不能被打开！")
+            self.record_log(debug_leave.LOG_ERROR, "dut power on 串口不能被打开！")
+            return None
+
+    def ftm_power_on_serial_port_open(self):
+        if self.config.has_option("ftm_switch_config", "s6_serial_port"):
+            self.ftm_switch_ser.port = self.config.get("ftm_switch_config", "s6_serial_port")
+        if self.config.has_option("ftm_switch_config", "s6_baudrate"):
+            self.ftm_switch_ser.baudrate = int(self.config.get("ftm_switch_config", "s6_baudrate"))
+        if self.config.has_option("ftm_switch_config", "s6_bytesize"):
+            self.ftm_switch_ser.bytesize = int(self.config.get("ftm_switch_config", "s6_bytesize"))
+        if self.config.has_option("ftm_switch_config", "s6_stopbits"):
+            self.ftm_switch_ser.stopbits = int(self.config.get("ftm_switch_config", "s6_stopbits"))
+        if self.config.has_option("ftm_switch_config", "s6_parity"):
+            self.ftm_switch_ser.parity = self.config.get("ftm_switch_config", "s6_parity")
+
+        self.record_log(debug_leave.LOG_DEBUG, 'ftm power on serial config ' + self.ftm_switch_ser.port +
+                        ' %s' % self.ftm_switch_ser.baudrate + ' %s' % self.ftm_switch_ser.bytesize +
+                        ' %s' % self.ftm_switch_ser.stopbits + ' ' + self.ftm_switch_ser.parity)
+
+        if self.ftm_switch_ser.isOpen():
+            self.record_log(debug_leave.LOG_DEBUG, "ftm power on serial open successed")
+
+        try:
+            self.ftm_switch_ser.open()
+            self.record_log(debug_leave.LOG_ERROR, "ftm power on serial open successed!")
+        except:
+            QMessageBox.critical(self, "Port Error", "ftm power on串口不能被打开！")
+            self.record_log(debug_leave.LOG_ERROR, "ftm power on 串口不能被打开！")
             return None
 
     # open serial
     def port_open(self):
         # cli serial port open
         self.cli_serial_port_open()
-        # power on serial port open
-        self.power_on_serial_port_open()
+        # dut power on serial port open
+        self.dut_power_on_serial_port_open()
+        # ftm power on ftm port open
+        self.ftm_power_on_serial_port_open()
         # tt serial port open
         self.auto.tt_ser_open()
         # lp serial port open
@@ -190,7 +221,8 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
             self.user.stop_thread()
             self.auto.stop_thread()
             self.ser.close()
-            self.switch_ser.close()
+            self.dut_switch_ser.close()
+            self.ftm_switch_ser.close()
             self.auto.tt_ser.close()
             self.auto.att_control_ser.close()
         except:
@@ -199,9 +231,9 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         self.open_button.setEnabled(True)
         self.close_button.setEnabled(False)
 
-    # power on/down cmd
-    def switch_send_cmd(self, str_cmd):
-        if self.switch_ser.isOpen():
+    # dut power on/down cmd
+    def dut_switch_send_cmd(self, str_cmd):
+        if self.dut_switch_ser.isOpen():
             input_s = str_cmd
             if input_s != "":
                 input_s = input_s.strip()
@@ -216,10 +248,30 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
                     send_list.append(num)
                 input_s = bytes(send_list)
 
-            self.switch_ser.write(input_s)
+            self.dut_switch_ser.write(input_s)
         else:
             pass
 
+    # ftm power on/down cmd
+    def ftm_switch_send_cmd(self, str_cmd):
+        if self.ftm_switch_ser.isOpen():
+            input_s = str_cmd
+            if input_s != "":
+                input_s = input_s.strip()
+                send_list = []
+                while input_s != '':
+                    try:
+                        num = int(input_s[0:2], 16)
+                    except ValueError:
+                        QMessageBox.critical(self, 'wrong data', '请输入十六进制数据，以空格分开!')
+                        return None
+                    input_s = input_s[2:].strip()
+                    send_list.append(num)
+                input_s = bytes(send_list)
+
+            self.ftm_switch_ser.write(input_s)
+        else:
+            pass
     # send data
     def data_send_cmd(self, str_cmd):
         if self.ser.isOpen():
@@ -245,7 +297,7 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
     def some_test_func(self):
         self.timer = QTimer(self)  # init timer
         self.timer.timeout.connect(self.auto.test_case)
-        self.timer.start(20*1000)  # start timer
+        self.timer.start(30*1000)  # start timer
 
     # read file test
     def readfile_test(self):
@@ -263,6 +315,10 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
 
     def test_start(self):
         self.tree.tw.table_statistics()
+
+    def test_stop(self):
+        self.auto.sig_gen.close_signal_generator()
+        self.auto.auto_close()
 
     def log_display(self, str):
         # get test cursor

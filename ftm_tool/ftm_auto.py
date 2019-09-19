@@ -106,13 +106,20 @@ class EXTMI_MARCO:
     EXTMI_14 = 14
     EXTMI_MAX = 15
 
+class PB_NUM:
+    PB_NUM_72 = 72
+    PB_NUM_136 = 136
+    PB_NUM_264 = 264
+    PB_NUM_520 = 520
+
 class SIGNOL_MARCO:
     WHITE_TEST = 1
     PULSE_TEST = 2
     SIN_TEST = 3
+    ATT_TEST = 4
 
 class ftm_auto():
-    def __init__(self, table, log_disp, switch_ser, ftmuser, record_log, lcd, pbar_emit):
+    def __init__(self, table, log_disp, dut_switch_ser, ftm_switch_ser, ftmuser, record_log, lcd, pbar_emit):
         self.record_log = record_log
         self.filename_record = ''
 
@@ -122,7 +129,8 @@ class ftm_auto():
         self.micro = ui2.all_cert_case_value()
         self.log_display_ui = log_disp
         self.ftm = ftmuser
-        self.switch_ser = switch_ser
+        self.dut_switch_ser = dut_switch_ser
+        self.ftm_switch_ser = ftm_switch_ser
         self.error_type = 0
         # transparent transmission serial port
         self.tt_ser = serial.Serial()
@@ -154,6 +162,12 @@ class ftm_auto():
         self.att_control_ser = self.sig_gen.att_control_ser
         self.overnight_cnt = 0
         self.crc_calu = crc_calu.crc_calu()
+        self.g_tmi, self.g_extmi = 0, 0
+        self.tmipb = tmi_pb_num()
+
+    def auto_close(self):
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     def auto_pbar_set(self, int):
         self.pbar_emit(int)
@@ -277,7 +291,10 @@ class ftm_auto():
             num += bytes2read
 
             str_compare = str(self.pack_compare, encoding='utf-8')
-            str_len = len(str_compare)/2
+            str_len = self.tmipb.tmi_get_pb_num(self.g_tmi, self.g_extmi)
+            if str_len == 0:
+                print('%d %d error' % (self.g_tmi, self.g_extmi))
+                assert(0)
 
             # TODO: maybe have same better way to handle serial rx frame break
             if num < str_len:
@@ -318,7 +335,10 @@ class ftm_auto():
             num += bytes2read
 
             str_compare = str(self.pack_compare, encoding='utf-8')
-            str_len = len(str_compare)/2
+            str_len = self.tmipb.tmi_get_pb_num(self.g_tmi, self.g_extmi)
+            if str_len == 0:
+                print('%d %d error' % (self.g_tmi, self.g_extmi))
+                assert(0)
 
             # TODO: maybe have same better way to handle serial rx frame break
             if num < str_len:
@@ -431,8 +451,8 @@ class ftm_auto():
         return self.error_type
 
     # entry phy lp mode
-    def auto_ftm_tx_test_pkt(self, tmi):
-        self.auto_tx_data("load pkt_cfg_cert -d 1" + ' -t %d' % tmi)
+    def auto_ftm_tx_test_pkt(self, tmi, extmi = 0):
+        self.auto_tx_data("load pkt_cfg_cert -d 1" + ' -t %d' % tmi + ' -et %d' % extmi)
         self.auto_tx_data("load pkt_data_cert_test")
         self.auto_tx_data("load test_case -n 1 -i 100")
 
@@ -483,7 +503,7 @@ class ftm_auto():
 
         print(str)
 
-    def auto_att_interfere_test(self, str_info, band_id, test_id=0, narrow_id=0):
+    def auto_test_entry_and_init(self, str_info, band_id):
 
         self.auto_pbar_set(10)
 
@@ -492,32 +512,37 @@ class ftm_auto():
         f.close()
         self.record_log(hplc_cert.debug_leave.LOG_DEBUG, '*' * 20 + str_info + '*' * 20)
         # start run
-        self.log_display_record(" 台体开始上电")
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.log_display_record("开始测试" + str_info)
+        self.log_display_record("台体开始上电" + str_info)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_ON)
+        time.sleep(2)
 
-        self.log_display_record(" 初始化台体")
+        self.log_display_record("初始化台体")
         # proto = sg, band = 2
         self.auto_init_ftm(PROTO_MARCO.PROTO_SG, BAND_ID_MARCO.PROTO_BAND_ID_2)
-        # set att init 10db
-        self.sig_gen.auto_set_att_control(10)
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        # set att init 0db + default att 20db
+        self.sig_gen.auto_set_att_control(0)
 
-        self.log_display_record(" 模块上电")
-        self.switch_ser(POWER_MARCO.POWER_ON)
+        self.log_display_record("模块上电")
+        self.dut_switch_ser(POWER_MARCO.POWER_ON)
         time.sleep(3)
 
-        self.log_display_record(" 开始发送设置band的包")
+        self.log_display_record("开始发送设置band的包")
         self.auto_ftm_set_band(PROTO_MARCO.PROTO_SG, band_id)
         # proto = sg, band = 0
         self.auto_ftm_set_self_band(PROTO_MARCO.PROTO_SG, band_id)
-        self.log_display_record(" 设置band结束  开始发送进入透传模式的包")
+        self.log_display_record("设置band结束  开始发送进入透传模式的包")
 
         self.auto_pbar_set(20)
 
         self.auto_ftm_entry_mode(PROTO_MARCO.PROTO_SG, MODE_MARCO.CERT_TEST_CMD_ENTER_PHY_T)
         time.sleep(3)
-        self.log_display_record(" 发送进入透传模式的包结束  开始发送测试包")
+        self.log_display_record("发送进入透传模式的包结束  开始发送测试包")
 
+    def auto_att_interfere_test(self, test_id=0, narrow_id=0):
+        # set program att 0
+        self.sig_gen.auto_set_att_control(0)
         # get config
         if test_id == SIGNOL_MARCO.WHITE_TEST:
             # white noise test
@@ -528,15 +553,17 @@ class ftm_auto():
         elif test_id == SIGNOL_MARCO.SIN_TEST:
             # narrow test
             self.sig_gen.sg_set_sin(narrow_id)
+            if narrow_id > 100:
+                self.log_display_record("抗窄带，频率:%d k" % narrow_id)
+            else:
+                self.log_display_record("抗窄带，频率:%d M" % narrow_id)
         else:
             pass
 
         # get line att
-        line_att, att_success_rate, att_pass_threshold = self.sig_gen.att_get_init_config()
+        line_att, att_success_rate, att_pass_threshold = self.sig_gen.att_get_init_config(test_id)
 
-        self.pack_compare = self.auto_ftm_get_fc_info()
         self.data_record_flag = 1
-        compare_cnt, compare_rate = 0, 0
         pbar_value = 20
         last_value = 0
         att_min = ATT_VALUE_MARCO.ATT_VALUE_MIN + line_att
@@ -544,7 +571,7 @@ class ftm_auto():
         for att_value in range(att_min, att_max, ATT_VALUE_MARCO.ATT_COARSE_STEP):
             # set attenuator value
             self.sig_gen.auto_set_att_control(att_value - line_att)
-            self.log_display_record(" 设置的衰减值为:%d  并发送5个beacon" % att_value)
+            self.log_display_record("设置的衰减值为:%d  并发送5个beacon" % att_value)
             # send beacon
             self.auto_ftm_tx_beacon()
             compare_cnt, compare_rate, fail_cnt = 0, 0, 0
@@ -553,7 +580,15 @@ class ftm_auto():
                 # rough tuning is no longer pass, into next stage
                 if i - compare_cnt > 10:
                     break
+                # get fc
+                self.auto_ftm_tx_test_pkt(TMI_MARCO.TMI_4)
+                time.sleep(0.5)
+                self.pack_compare = self.auto_ftm_get_fc_info()
+
                 self.compare_queue.queue.clear()
+
+                self.g_tmi = TMI_MARCO.TMI_4
+                self.g_extmi = 0
                 self.auto_ftm_tx_test_pkt(TMI_MARCO.TMI_4)
                 try:
                     str = self.compare_queue.get(timeout=5)
@@ -570,9 +605,9 @@ class ftm_auto():
                     self.log_display_record("other fail! %d" % i)
                 time.sleep(0.5)
             compare_rate = (compare_cnt * 100) / OTHER_MARCO.TEST_TIMES
-            self.log_display_record(" 衰减值为: %d 的时候, 成功率为: %d" % (att_value, compare_rate))
+            self.log_display_record("衰减值为: %d 的时候, 成功率为: %d" % (att_value, compare_rate))
             # rate > threshold , continue. else entry next stage
-            if compare_rate > att_success_rate:
+            if compare_rate >= att_success_rate:
                 # over the attenuator max
                 if att_value >= att_max - ATT_VALUE_MARCO.ATT_COARSE_STEP:
                     last_value = att_value
@@ -597,7 +632,7 @@ class ftm_auto():
             for att_fine_value in range(fine_init_value, att_value, ATT_VALUE_MARCO.ATT_FINE_STEP):
                 # set attenuator value
                 self.sig_gen.auto_set_att_control(att_fine_value - line_att)
-                self.log_display_record(" 设置的衰减值为: %d 发送5个beacon" % att_fine_value)
+                self.log_display_record("设置的衰减值为: %d 发送5个beacon" % att_fine_value)
                 # send beacon
                 self.auto_ftm_tx_beacon()
                 compare_cnt, compare_rate, fail_cnt = 0, 0, 0
@@ -606,7 +641,15 @@ class ftm_auto():
                     # current testing, more than 10 packages can not be received
                     if i - compare_cnt > 10:
                         break
+                    # get fc
+                    self.auto_ftm_tx_test_pkt(TMI_MARCO.TMI_4)
+                    time.sleep(0.5)
+                    self.pack_compare = self.auto_ftm_get_fc_info()
+
                     self.compare_queue.queue.clear()
+
+                    self.g_tmi = TMI_MARCO.TMI_4
+                    self.g_extmi = 0
                     self.auto_ftm_tx_test_pkt(TMI_MARCO.TMI_4)
                     try:
                         str = self.compare_queue.get(timeout=2)
@@ -623,9 +666,9 @@ class ftm_auto():
                         self.log_display_record("other fail! %d" % i)
                     time.sleep(0.5)
                     compare_rate = (compare_cnt * 100) / OTHER_MARCO.TEST_TIMES
-                self.log_display_record(" 衰减值为: %d 的时候, 成功率为: %d" % (att_fine_value, compare_rate))
+                self.log_display_record("衰减值为: %d 的时候, 成功率为: %d" % (att_fine_value, compare_rate))
                 # rate > threshold , continue. else entry next stage
-                if compare_rate > att_success_rate:
+                if compare_rate >= att_success_rate:
                     pbar_value += 5
                     if pbar_value > 90:
                         pbar_value = 90
@@ -636,13 +679,16 @@ class ftm_auto():
                     return [last_value, att_pass_threshold]
         return [last_value, att_pass_threshold]
 
-    def loopback_handle(self, str_title, band_id, tmi_max):
+    def loopback_handle(self, str_title, band_id, tmi_max, extmi_max):
         # start run
         str_ftm = "开始测试 " + str_title
         self.log_display_record(str_ftm)
         str_ftm = "台体开始上电"
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_ON)
+        self.sig_gen.auto_set_att_control(0)
         self.log_display_record(str_ftm)
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        time.sleep(5)
 
         str_ftm = "初始化台体"
         self.log_display_record(str_ftm)
@@ -651,7 +697,7 @@ class ftm_auto():
 
         str_ftm = "模块上电"
         self.log_display_record(str_ftm)
-        self.switch_ser(POWER_MARCO.POWER_ON)
+        self.dut_switch_ser(POWER_MARCO.POWER_ON)
         time.sleep(5)
 
         self.auto_pbar_set(5)
@@ -672,7 +718,7 @@ class ftm_auto():
 
         pbar_value = 20
         # calulate pbar step
-        pbar_step = 80/tmi_max
+        pbar_step = 80/(tmi_max + extmi_max)
         print(pbar_step)
 
         # entry rx mode
@@ -683,20 +729,20 @@ class ftm_auto():
         self.log_display_record(str_ftm)
         self.auto_ftm_entry_mode(PROTO_MARCO.PROTO_SG, MODE_MARCO.CERT_TEST_CMD_ENTER_PHY_LP)
         self.data_record_flag = 0
-        compare_flag, compare_cnt = 0, 0
-        not_entry_lp = 0
+        compare_flag, compare_cnt, test_cnt = 0, 0, 0
         remark = ''
         for tmi in range(tmi_max):
+            if band_id == BAND_ID_MARCO.PROTO_BAND_ID_2 and tmi == TMI_MARCO.TMI_7:
+                continue
             compare_flag = 0
-            if not_entry_lp == 1:
-                remark = 'not entry lp mode'
-                self.log_display_record(remark)
-                break
+            test_cnt += 1
+            self.log_display_record("发送5个beacon")
+            # send beacon
+            self.auto_ftm_tx_beacon()
             for times in range(20):
                 if compare_flag == 1:
                     break
                 elif times == 19:
-                    not_entry_lp = 1
                     break
                 # pre-send pkt and get fc
                 self.auto_ftm_tx_test_pkt(tmi)
@@ -707,6 +753,8 @@ class ftm_auto():
 
                 self.compare_queue.queue.clear()
                 self.data_record_flag = 1
+                self.g_tmi = tmi
+                self.g_extmi = 0
                 self.auto_ftm_tx_test_pkt(tmi)
 
                 try:
@@ -728,11 +776,66 @@ class ftm_auto():
                 remark += str_l
                 self.data_record_flag = 0
                 time.sleep(0.5)
+            if tmi == TMI_MARCO.TMI_14:
+                for extmi in range(extmi_max):
+                    if extmi == 0 or extmi == 7 or extmi == 8 or extmi == 9:
+                        continue
+                    compare_flag = 0
+                    test_cnt += 1
+                    self.log_display_record("发送5个beacon")
+                    # send beacon
+                    self.auto_ftm_tx_beacon()
+                    for times in range(20):
+                        if compare_flag == 1:
+                            break
+                        elif times == 19:
+                            not_entry_lp = 1
+                            break
+                        # pre-send pkt and get fc
+                        self.auto_ftm_tx_test_pkt(TMI_MARCO.TMI_MAX, extmi)
+                        # delay 0.5s and get correct fc
+                        time.sleep(0.5)
+                        # get config fc
+                        self.pack_compare = self.auto_ftm_get_fc_info()
+
+                        self.compare_queue.queue.clear()
+                        self.data_record_flag = 1
+                        self.g_tmi = TMI_MARCO.TMI_MAX
+                        self.g_extmi = extmi
+                        self.auto_ftm_tx_test_pkt(TMI_MARCO.TMI_MAX, extmi)
+
+                        try:
+                            str = self.compare_queue.get(timeout=2)
+                        except:
+                            str = 'compare_fail'
+
+                        if str == 'compare_pass':
+                            compare_cnt += 1
+                            compare_flag = 1
+                            str_l = "ext tmi %d loopback test success." % extmi
+                            self.log_display_record(str_l)
+                        elif str == 'compare_fail':
+                            str_l = "ext tmi %d loopback test fail." % extmi
+                            self.log_display_record(str_l)
+                        else:
+                            str_l = "other fail! %d" % extmi
+                            self.log_display_record(str_l)
+                        remark += str_l
+                        self.data_record_flag = 0
+                        time.sleep(0.5)
+                    # set pbar value
+                    pbar_value += pbar_step
+                    self.auto_pbar_set(pbar_value)
             # set pbar value
             pbar_value += pbar_step
             self.auto_pbar_set(pbar_value)
 
-        return [compare_cnt, remark]
+        if compare_cnt == test_cnt:
+            result = 'pass'
+        else:
+            result = 'fail'
+
+        return [result, remark]
 
     # sta tmi scan band0
     def sta_tmi_scan_band0(self):
@@ -750,12 +853,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        compare_cnt, remark = self.loopback_handle("TMI遍历 STA band0", BAND_ID_MARCO.PROTO_BAND_ID_0, TMI_MARCO.TMI_MAX)
-
-        if compare_cnt == TMI_MARCO.TMI_MAX:
-            result = 'pass'
-        else:
-            result = 'fail'
+        result, remark = self.loopback_handle("TMI遍历 STA band0", BAND_ID_MARCO.PROTO_BAND_ID_0,
+                                                   TMI_MARCO.TMI_MAX, EXTMI_MARCO.EXTMI_MAX)
 
         # 获取结束时间
         t_end = datetime.now()
@@ -764,7 +863,8 @@ class ftm_auto():
         self.log_display_record("TMI遍历 STA band0: %s" % remark)
         self.log_display_record("测试结束, 结果: %s " % result)
         self.auto_pbar_set(100)
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # sta tmi scan band1
     def sta_tmi_scan_band1(self):
@@ -782,12 +882,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        compare_cnt, remark = self.loopback_handle("TMI遍历 STA band1", BAND_ID_MARCO.PROTO_BAND_ID_1, TMI_MARCO.TMI_MAX)
-
-        if compare_cnt == TMI_MARCO.TMI_MAX:
-            result = 'pass'
-        else:
-            result = 'fail'
+        result, remark = self.loopback_handle("TMI遍历 STA band1", BAND_ID_MARCO.PROTO_BAND_ID_1,
+                                                   TMI_MARCO.TMI_MAX, EXTMI_MARCO.EXTMI_MAX)
 
         # 获取结束时间
         t_end = datetime.now()
@@ -796,7 +892,8 @@ class ftm_auto():
         self.log_display_record("TMI遍历 STA band1: %s" % remark)
         self.log_display_record("测试结束, 结果: %s " % result)
         self.auto_pbar_set(100)
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # sta tmi scan band2
     def sta_tmi_scan_band2(self):
@@ -814,12 +911,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        compare_cnt, remark = self.loopback_handle("TMI遍历 STA band2", BAND_ID_MARCO.PROTO_BAND_ID_2, TMI_MARCO.TMI_MAX)
-
-        if compare_cnt == TMI_MARCO.TMI_MAX:
-            result = 'pass'
-        else:
-            result = 'fail'
+        result, remark = self.loopback_handle("TMI遍历 STA band2", BAND_ID_MARCO.PROTO_BAND_ID_2,
+                                                   TMI_MARCO.TMI_MAX, EXTMI_MARCO.EXTMI_MAX)
 
         # 获取结束时间
         t_end = datetime.now()
@@ -828,7 +921,8 @@ class ftm_auto():
         self.log_display_record("TMI遍历 STA band2: %s" % remark)
         self.log_display_record("测试结束, 结果: %s " % result)
         self.auto_pbar_set(100)
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # sta tmi scan band3
     def sta_tmi_scan_band3(self):
@@ -846,12 +940,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        compare_cnt, remark = self.loopback_handle("TMI遍历 STA band3", BAND_ID_MARCO.PROTO_BAND_ID_3, TMI_MARCO.TMI_MAX)
-
-        if compare_cnt == TMI_MARCO.TMI_MAX:
-            result = 'pass'
-        else:
-            result = 'fail'
+        result, remark = self.loopback_handle("TMI遍历 STA band3", BAND_ID_MARCO.PROTO_BAND_ID_3,
+                                                   TMI_MARCO.TMI_MAX, EXTMI_MARCO.EXTMI_MAX)
 
         # 获取结束时间
         t_end = datetime.now()
@@ -860,7 +950,8 @@ class ftm_auto():
         self.log_display_record("TMI遍历 STA band3: %s" % remark)
         self.log_display_record("测试结束, 结果: %s " % result)
         self.auto_pbar_set(100)
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     def overnight_test(self, str_info, band_id):
 
@@ -871,17 +962,18 @@ class ftm_auto():
         # start run
         self.overnight_cnt += 1
         self.log_display_record(" 台体开始上电 %d" % self.overnight_cnt)
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
-
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_ON)
+        time.sleep(3)
         self.log_display_record(" 初始化台体")
         # proto = sg, band = 2
         self.auto_init_ftm(PROTO_MARCO.PROTO_SG, BAND_ID_MARCO.PROTO_BAND_ID_2)
         # set att init 10db
         #self.sig_gen.auto_set_att_control(10)
-        #self.switch_ser(POWER_MARCO.POWER_DOWN)
+        #self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
 
         self.log_display_record(" 模块上电")
-        self.switch_ser(POWER_MARCO.POWER_ON)
+        self.dut_switch_ser(POWER_MARCO.POWER_ON)
         time.sleep(8)
 
         self.log_display_record(" 开始发送设置band的包")
@@ -897,7 +989,8 @@ class ftm_auto():
         self.log_display_record(" 发送进入透传模式的包结束  开始发送测试包")
 
         #time.sleep(10)
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # sta tonemask band0
     def sta_tonemask_band0(self):
@@ -957,12 +1050,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        compare_cnt, remark = self.loopback_handle("TMI遍历 CCO band0", BAND_ID_MARCO.PROTO_BAND_ID_0, TMI_MARCO.TMI_MAX)
-
-        if compare_cnt == TMI_MARCO.TMI_MAX:
-            result = 'pass'
-        else:
-            result = 'fail'
+        result, remark = self.loopback_handle("TMI遍历 CCO band0", BAND_ID_MARCO.PROTO_BAND_ID_0,
+                                                   TMI_MARCO.TMI_MAX, EXTMI_MARCO.EXTMI_MAX)
 
         # 获取结束时间
         t_end = datetime.now()
@@ -971,7 +1060,8 @@ class ftm_auto():
         self.log_display_record("TMI遍历 CCO band0: %s" % remark)
         self.log_display_record("测试结束, 结果: %s " % result)
         self.auto_pbar_set(100)
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # cco tmi scan band1
     def cco_tmi_scan_band1(self):
@@ -989,12 +1079,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        compare_cnt, remark = self.loopback_handle("TMI遍历 CCO band1", BAND_ID_MARCO.PROTO_BAND_ID_1, TMI_MARCO.TMI_MAX)
-
-        if compare_cnt == TMI_MARCO.TMI_MAX:
-            result = 'pass'
-        else:
-            result = 'fail'
+        result, remark = self.loopback_handle("TMI遍历 CCO band1", BAND_ID_MARCO.PROTO_BAND_ID_1,
+                                                   TMI_MARCO.TMI_MAX, EXTMI_MARCO.EXTMI_MAX)
 
         # 获取结束时间
         t_end = datetime.now()
@@ -1003,7 +1089,8 @@ class ftm_auto():
         self.log_display_record("TMI遍历 CCO band1: %s" % remark)
         self.log_display_record("测试结束, 结果: %s " % result)
         self.auto_pbar_set(100)
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # cco tmi scan band2
     def cco_tmi_scan_band2(self):
@@ -1021,12 +1108,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        compare_cnt, remark = self.loopback_handle("TMI遍历 CCO band2", BAND_ID_MARCO.PROTO_BAND_ID_2, TMI_MARCO.TMI_MAX)
-
-        if compare_cnt == TMI_MARCO.TMI_MAX:
-            result = 'pass'
-        else:
-            result = 'fail'
+        result, remark = self.loopback_handle("TMI遍历 CCO band2", BAND_ID_MARCO.PROTO_BAND_ID_2,
+                                                   TMI_MARCO.TMI_MAX, EXTMI_MARCO.EXTMI_MAX)
 
         # 获取结束时间
         t_end = datetime.now()
@@ -1035,7 +1118,8 @@ class ftm_auto():
         self.log_display_record("TMI遍历 CCO band2: %s" % remark)
         self.log_display_record("测试结束, 结果: %s " % result)
         self.auto_pbar_set(100)
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # cco tmi scan band3
     def cco_tmi_scan_band3(self):
@@ -1053,12 +1137,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        compare_cnt, remark = self.loopback_handle("TMI遍历 CCO band3", BAND_ID_MARCO.PROTO_BAND_ID_3, TMI_MARCO.TMI_MAX)
-
-        if compare_cnt == TMI_MARCO.TMI_MAX:
-            result = 'pass'
-        else:
-            result = 'fail'
+        result, remark = self.loopback_handle("TMI遍历 CCO band3", BAND_ID_MARCO.PROTO_BAND_ID_3,
+                                                   TMI_MARCO.TMI_MAX, EXTMI_MARCO.EXTMI_MAX)
 
         # 获取结束时间
         t_end = datetime.now()
@@ -1067,7 +1147,8 @@ class ftm_auto():
         self.log_display_record("TMI遍历 CCO band3: %s" % remark)
         self.log_display_record("测试结束, 结果: %s " % result)
         self.auto_pbar_set(100)
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # cco tonemask band0
     def cco_tonemask_band0(self):
@@ -1124,8 +1205,9 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
+        self.auto_test_entry_and_init('sta 白噪声 band1', BAND_ID_MARCO.PROTO_BAND_ID_1)
         last_value, att_pass_threshold = \
-            self.auto_att_interfere_test('sta 白噪声 band1', BAND_ID_MARCO.PROTO_BAND_ID_1, SIGNOL_MARCO.WHITE_TEST)
+            self.auto_att_interfere_test(SIGNOL_MARCO.WHITE_TEST)
 
         result = ''
         if last_value > att_pass_threshold:
@@ -1145,7 +1227,8 @@ class ftm_auto():
 
         # clear status
         self.data_record_flag = 0
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # sta white noise band2
     def sta_performance_white_noise_band2(self):
@@ -1159,8 +1242,9 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
+        self.auto_test_entry_and_init('sta 白噪声 band2', BAND_ID_MARCO.PROTO_BAND_ID_2)
         last_value, att_pass_threshold = \
-            self.auto_att_interfere_test('sta 白噪声 band2', BAND_ID_MARCO.PROTO_BAND_ID_2, SIGNOL_MARCO.WHITE_TEST)
+            self.auto_att_interfere_test(SIGNOL_MARCO.WHITE_TEST)
 
         result = ''
         if last_value > att_pass_threshold:
@@ -1180,7 +1264,8 @@ class ftm_auto():
 
         # clear status
         self.data_record_flag = 0
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # sta anti-ppm band1
     def sta_performance_anti_ppm_band1(self):
@@ -1214,7 +1299,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        last_value, att_pass_threshold = self.auto_att_interfere_test('sta 抗衰减 band1', BAND_ID_MARCO.PROTO_BAND_ID_1)
+        self.auto_test_entry_and_init('sta 抗衰减 band1', BAND_ID_MARCO.PROTO_BAND_ID_1)
+        last_value, att_pass_threshold = self.auto_att_interfere_test()
 
         result = ''
         if last_value > att_pass_threshold:
@@ -1234,7 +1320,8 @@ class ftm_auto():
 
         # clear status
         self.data_record_flag = 0
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # sta anti-attenuation band2
     def sta_performance_anti_att_band2(self):
@@ -1249,7 +1336,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        last_value, att_pass_threshold = self.auto_att_interfere_test('sta 抗衰减 band2', BAND_ID_MARCO.PROTO_BAND_ID_2)
+        self.auto_test_entry_and_init('sta 抗衰减 band2', BAND_ID_MARCO.PROTO_BAND_ID_2)
+        last_value, att_pass_threshold = self.auto_att_interfere_test()
 
         result = ''
         if last_value > att_pass_threshold:
@@ -1269,7 +1357,8 @@ class ftm_auto():
 
         # clear status
         self.data_record_flag = 0
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     def test_case(self):
         #self.auto_pbar_set(0)
@@ -1295,71 +1384,118 @@ class ftm_auto():
         t_start = datetime.now()
         result = 'pass'
         remark = ''
+        self.auto_test_entry_and_init('sta 抗窄带 band1', BAND_ID_MARCO.PROTO_BAND_ID_1)
         # 1M
         last_value, att_pass_threshold = \
-            self.auto_att_interfere_test('sta 抗窄带 band1',
-                                         BAND_ID_MARCO.PROTO_BAND_ID_1,
-                                         SIGNOL_MARCO.SIN_TEST, NARROW_MARCO.NARROW_1M)
+            self.auto_att_interfere_test(SIGNOL_MARCO.SIN_TEST, NARROW_MARCO.NARROW_1M)
 
         if last_value > att_pass_threshold and result == 'pass':
             result = 'pass'
         else:
             result = 'fail'
-        remark += 'anti-narrow 1M attenuation is :  %d' % last_value
+        remark_tmp = 'anti-narrow 1M attenuation is :  %d' % last_value
+        self.log_display_record(remark_tmp)
+        remark += remark_tmp
         # 3M
         last_value, att_pass_threshold = \
-            self.auto_att_interfere_test('sta 抗窄带 band1',
-                                         BAND_ID_MARCO.PROTO_BAND_ID_1,
-                                         SIGNOL_MARCO.SIN_TEST, NARROW_MARCO.NARROW_3M)
+            self.auto_att_interfere_test(SIGNOL_MARCO.SIN_TEST, NARROW_MARCO.NARROW_3M)
 
         if last_value > att_pass_threshold and result == 'pass':
             result = 'pass'
         else:
             result = 'fail'
-        remark += 'anti-narrow 3M attenuation is :  %d' % last_value
+        remark_tmp = 'anti-narrow 3M attenuation is :  %d' % last_value
+        self.log_display_record(remark_tmp)
+        remark += remark_tmp
         # 6M
         last_value, att_pass_threshold = \
-            self.auto_att_interfere_test('sta 抗窄带 band1',
-                                         BAND_ID_MARCO.PROTO_BAND_ID_1,
-                                         SIGNOL_MARCO.SIN_TEST, NARROW_MARCO.NARROW_6M)
+            self.auto_att_interfere_test(SIGNOL_MARCO.SIN_TEST, NARROW_MARCO.NARROW_6M)
 
         if last_value > att_pass_threshold and result == 'pass':
             result = 'pass'
         else:
             result = 'fail'
-        remark = 'anti-narrow 6M attenuation is :  %d' % last_value
+        remark_tmp = 'anti-narrow 6M attenuation is :  %d' % last_value
+        self.log_display_record(remark_tmp)
+        remark += remark_tmp
 
         # 获取结束时间
         t_end = datetime.now()
         dlt_t = t_end - t_start
         self.table.signal2emit(["抗窄带性能 STA band1", '%s' % dlt_t, result, remark])
 
-        self.log_display_record(" 抗窄带性能 STA band1 抗衰减值为: %d " % last_value)
+        self.log_display_record(" 抗窄带性能 STA band1 抗衰减值为: %s " % remark)
         self.log_display_record(" 测试结束, 结果: %s " % result)
 
         self.auto_pbar_set(100)
 
         # clear status
         self.data_record_flag = 0
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
-
-        t1 = datetime.now()
-        time.sleep(4)
-        print(sys._getframe().f_code.co_name)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["抗窄带性能 STA band1", '%s' % dlt_t, "pass", "ok"])
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # sta anti-narrowband band2
     def sta_performance_anti_narrow_band2(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        print(sys._getframe().f_code.co_name)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["抗窄带性能 STA band2", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch ='.\LOG\cert_log\性能测试'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        self.filename_record = patch + '\sta_抗窄带_band2_' + file_time + '.log'
+
+        # 获取开始时间
+        t_start = datetime.now()
+        result = 'pass'
+        remark = ''
+        self.auto_test_entry_and_init('sta 抗窄带 band2', BAND_ID_MARCO.PROTO_BAND_ID_2)
+        # 1M
+        last_value, att_pass_threshold = \
+            self.auto_att_interfere_test(SIGNOL_MARCO.SIN_TEST, NARROW_MARCO.NARROW_1M)
+
+        if last_value > att_pass_threshold and result == 'pass':
+            result = 'pass'
+        else:
+            result = 'fail'
+        remark_tmp = 'anti-narrow 1M attenuation is :  %d' % last_value
+        self.log_display_record(remark_tmp)
+        remark += remark_tmp
+        # 3M
+        last_value, att_pass_threshold = \
+            self.auto_att_interfere_test(SIGNOL_MARCO.SIN_TEST, NARROW_MARCO.NARROW_3M)
+
+        if last_value > att_pass_threshold and result == 'pass':
+            result = 'pass'
+        else:
+            result = 'fail'
+        remark_tmp = 'anti-narrow 3M attenuation is :  %d' % last_value
+        self.log_display_record(remark_tmp)
+        remark += remark_tmp
+        # 6M
+        last_value, att_pass_threshold = \
+            self.auto_att_interfere_test(SIGNOL_MARCO.SIN_TEST, NARROW_MARCO.NARROW_6M)
+
+        if last_value > att_pass_threshold and result == 'pass':
+            result = 'pass'
+        else:
+            result = 'fail'
+        remark_tmp = 'anti-narrow 6M attenuation is :  %d' % last_value
+        self.log_display_record(remark_tmp)
+        remark += remark_tmp
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["抗窄带性能 STA band2", '%s' % dlt_t, result, remark])
+
+        self.log_display_record(" 抗窄带性能 STA band2 抗衰减值为: %s " % remark)
+        self.log_display_record(" 测试结束, 结果: %s " % result)
+
+        self.auto_pbar_set(100)
+
+        # clear status
+        self.data_record_flag = 0
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # sta anti-pulse band1
     def sta_performance_anti_pulse_band1(self):
@@ -1373,8 +1509,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        last_value, att_pass_threshold = \
-            self.auto_att_interfere_test('sta 抗脉冲 band1', BAND_ID_MARCO.PROTO_BAND_ID_1, SIGNOL_MARCO.PULSE_TEST)
+        self.auto_test_entry_and_init('sta 抗脉冲 band1', BAND_ID_MARCO.PROTO_BAND_ID_1)
+        last_value, att_pass_threshold = self.auto_att_interfere_test(SIGNOL_MARCO.PULSE_TEST)
 
         result = ''
         if last_value > att_pass_threshold:
@@ -1394,7 +1530,8 @@ class ftm_auto():
 
         # clear status
         self.data_record_flag = 0
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # sta anti-pulse band2
     def sta_performance_anti_pulse_band2(self):
@@ -1408,8 +1545,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        last_value, att_pass_threshold = \
-            self.auto_att_interfere_test('sta 抗脉冲 band2', BAND_ID_MARCO.PROTO_BAND_ID_2, SIGNOL_MARCO.PULSE_TEST)
+        self.auto_test_entry_and_init('sta 抗脉冲 band2', BAND_ID_MARCO.PROTO_BAND_ID_2)
+        last_value, att_pass_threshold = self.auto_att_interfere_test(SIGNOL_MARCO.PULSE_TEST)
 
         result = ''
         if last_value > att_pass_threshold:
@@ -1429,7 +1566,8 @@ class ftm_auto():
 
         # clear status
         self.data_record_flag = 0
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # sta psd band1
     def sta_performance_psd_band1(self):
@@ -1473,8 +1611,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        last_value, att_pass_threshold = \
-            self.auto_att_interfere_test('cco 白噪声 band1', BAND_ID_MARCO.PROTO_BAND_ID_1, SIGNOL_MARCO.WHITE_TEST)
+        self.auto_test_entry_and_init('cco 白噪声 band1', BAND_ID_MARCO.PROTO_BAND_ID_1)
+        last_value, att_pass_threshold = self.auto_att_interfere_test(SIGNOL_MARCO.WHITE_TEST)
 
         result = ''
         if last_value > att_pass_threshold:
@@ -1494,7 +1632,8 @@ class ftm_auto():
 
         # clear status
         self.data_record_flag = 0
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # cco white noise band2
     def cco_performance_white_noise_band2(self):
@@ -1508,8 +1647,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        last_value, att_pass_threshold = \
-            self.auto_att_interfere_test('cco 白噪声 band2', BAND_ID_MARCO.PROTO_BAND_ID_2, SIGNOL_MARCO.WHITE_TEST)
+        self.auto_test_entry_and_init('cco 白噪声 band2', BAND_ID_MARCO.PROTO_BAND_ID_2)
+        last_value, att_pass_threshold = self.auto_att_interfere_test(SIGNOL_MARCO.WHITE_TEST)
 
         result = ''
         if last_value > att_pass_threshold:
@@ -1529,7 +1668,8 @@ class ftm_auto():
 
         # clear status
         self.data_record_flag = 0
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # cco anti-ppm band1
     def cco_performance_anti_ppm_band1(self):
@@ -1563,7 +1703,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        last_value, att_pass_threshold = self.auto_att_interfere_test('cco 抗衰减 band1', BAND_ID_MARCO.PROTO_BAND_ID_1)
+        self.auto_test_entry_and_init('cco 抗衰减 band1', BAND_ID_MARCO.PROTO_BAND_ID_1)
+        last_value, att_pass_threshold = self.auto_att_interfere_test()
 
         result = ''
         if last_value > att_pass_threshold:
@@ -1583,7 +1724,8 @@ class ftm_auto():
 
         # clear status
         self.data_record_flag = 0
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # cco anti-attenuation band2
     def cco_performance_anti_att_band2(self):
@@ -1597,7 +1739,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        last_value, att_pass_threshold = self.auto_att_interfere_test('cco 抗衰减 band2', BAND_ID_MARCO.PROTO_BAND_ID_2)
+        self.auto_test_entry_and_init('cco 抗衰减 band2', BAND_ID_MARCO.PROTO_BAND_ID_2)
+        last_value, att_pass_threshold = self.auto_att_interfere_test()
 
         result = ''
         if last_value > att_pass_threshold:
@@ -1617,27 +1760,134 @@ class ftm_auto():
 
         # clear status
         self.data_record_flag = 0
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # cco anti-narrowband band1
     def cco_performance_anti_narrow_band1(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        print(sys._getframe().f_code.co_name)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["抗窄带性能 CCO band1", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch ='.\LOG\cert_log\性能测试'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        self.filename_record = patch + '\cco_抗窄带_band1_' + file_time + '.log'
+
+        # 获取开始时间
+        t_start = datetime.now()
+        result = 'pass'
+        remark = ''
+        self.auto_test_entry_and_init('cco 抗窄带 band1', BAND_ID_MARCO.PROTO_BAND_ID_1)
+        # 1M
+        last_value, att_pass_threshold = \
+            self.auto_att_interfere_test(SIGNOL_MARCO.SIN_TEST, NARROW_MARCO.NARROW_1M)
+
+        if last_value > att_pass_threshold and result == 'pass':
+            result = 'pass'
+        else:
+            result = 'fail'
+        remark_tmp = 'anti-narrow 1M attenuation is :  %d' % last_value
+        self.log_display_record(remark_tmp)
+        remark += remark_tmp
+        # 3M
+        last_value, att_pass_threshold = \
+            self.auto_att_interfere_test(SIGNOL_MARCO.SIN_TEST, NARROW_MARCO.NARROW_3M)
+
+        if last_value > att_pass_threshold and result == 'pass':
+            result = 'pass'
+        else:
+            result = 'fail'
+        remark_tmp = 'anti-narrow 3M attenuation is :  %d' % last_value
+        self.log_display_record(remark_tmp)
+        remark += remark_tmp
+        # 6M
+        last_value, att_pass_threshold = \
+            self.auto_att_interfere_test(SIGNOL_MARCO.SIN_TEST, NARROW_MARCO.NARROW_6M)
+
+        if last_value > att_pass_threshold and result == 'pass':
+            result = 'pass'
+        else:
+            result = 'fail'
+        remark_tmp = 'anti-narrow 6M attenuation is :  %d' % last_value
+        self.log_display_record(remark_tmp)
+        remark += remark_tmp
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["抗窄带性能 CCO band1", '%s' % dlt_t, result, remark])
+
+        self.log_display_record("抗窄带性能 CCO band1: %s " % remark)
+        self.log_display_record("测试结束, 结果: %s " % result)
+
+        self.auto_pbar_set(100)
+
+        # clear status
+        self.data_record_flag = 0
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # cco anti-narrowband band2
     def cco_performance_anti_narrow_band2(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        print(sys._getframe().f_code.co_name)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["抗窄带性能 CCO band2", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch ='.\LOG\cert_log\性能测试'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        self.filename_record = patch + '\cco_抗窄带_band2_' + file_time + '.log'
+
+        # 获取开始时间
+        t_start = datetime.now()
+        result = 'pass'
+        remark = ''
+        self.auto_test_entry_and_init('cco 抗窄带 band2', BAND_ID_MARCO.PROTO_BAND_ID_1)
+        # 1M
+        last_value, att_pass_threshold = \
+            self.auto_att_interfere_test(SIGNOL_MARCO.SIN_TEST, NARROW_MARCO.NARROW_1M)
+
+        if last_value > att_pass_threshold and result == 'pass':
+            result = 'pass'
+        else:
+            result = 'fail'
+        remark_tmp = 'anti-narrow 1M attenuation is :  %d' % last_value
+        self.log_display_record(remark_tmp)
+        remark += remark_tmp
+        # 3M
+        last_value, att_pass_threshold = \
+            self.auto_att_interfere_test(SIGNOL_MARCO.SIN_TEST, NARROW_MARCO.NARROW_3M)
+
+        if last_value > att_pass_threshold and result == 'pass':
+            result = 'pass'
+        else:
+            result = 'fail'
+        remark_tmp = 'anti-narrow 3M attenuation is :  %d' % last_value
+        self.log_display_record(remark_tmp)
+        remark += remark_tmp
+        # 6M
+        last_value, att_pass_threshold = \
+            self.auto_att_interfere_test(SIGNOL_MARCO.SIN_TEST, NARROW_MARCO.NARROW_6M)
+
+        if last_value > att_pass_threshold and result == 'pass':
+            result = 'pass'
+        else:
+            result = 'fail'
+        remark_tmp = 'anti-narrow 6M attenuation is :  %d' % last_value
+        self.log_display_record(remark_tmp)
+        remark += remark_tmp
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["抗窄带性能 CCO band2", '%s' % dlt_t, result, remark])
+
+        self.log_display_record("抗窄带性能 CCO band2: %s " % remark)
+        self.log_display_record("测试结束, 结果: %s " % result)
+
+        self.auto_pbar_set(100)
+
+        # clear status
+        self.data_record_flag = 0
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # cco anti-pulse band1
     def cco_performance_anti_pulse_band1(self):
@@ -1651,8 +1901,8 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        last_value, att_pass_threshold = \
-            self.auto_att_interfere_test('cco 抗脉冲 band1', BAND_ID_MARCO.PROTO_BAND_ID_1, SIGNOL_MARCO.PULSE_TEST)
+        self.auto_test_entry_and_init('cco 抗脉冲 band1', BAND_ID_MARCO.PROTO_BAND_ID_1)
+        last_value, att_pass_threshold = self.auto_att_interfere_test(SIGNOL_MARCO.PULSE_TEST)
 
         result = ''
         if last_value > att_pass_threshold:
@@ -1672,7 +1922,8 @@ class ftm_auto():
 
         # clear status
         self.data_record_flag = 0
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # cco anti-pulse band2
     def cco_performance_anti_pulse_band2(self):
@@ -1686,10 +1937,9 @@ class ftm_auto():
         # 获取开始时间
         t_start = datetime.now()
 
-        last_value, att_pass_threshold = \
-            self.auto_att_interfere_test('cco 抗脉冲 band2', BAND_ID_MARCO.PROTO_BAND_ID_2, SIGNOL_MARCO.PULSE_TEST)
+        self.auto_test_entry_and_init('cco 抗脉冲 band2', BAND_ID_MARCO.PROTO_BAND_ID_2)
+        last_value, att_pass_threshold = self.auto_att_interfere_test(SIGNOL_MARCO.PULSE_TEST)
 
-        result = ''
         if last_value > att_pass_threshold:
             result = 'pass'
         else:
@@ -1707,7 +1957,8 @@ class ftm_auto():
 
         # clear status
         self.data_record_flag = 0
-        self.switch_ser(POWER_MARCO.POWER_DOWN)
+        self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
+        self.ftm_switch_ser(POWER_MARCO.POWER_DOWN)
 
     # cco psd band1
     def cco_performance_psd_band1(self):
@@ -1857,3 +2108,24 @@ class ftm_auto():
                 case_cnt = 0
                 self.timer_flag = 1
                 print("i am happy")
+
+class tmi_pb_num:
+
+    def tmi_get_pb_num(self, tmi, extmi = 0):
+        if tmi == TMI_MARCO.TMI_0 or tmi == TMI_MARCO.TMI_1 or (tmi >= TMI_MARCO.TMI_7 and tmi <= TMI_MARCO.TMI_10):
+            return PB_NUM.PB_NUM_520
+        elif tmi >= TMI_MARCO.TMI_2 and tmi <= TMI_MARCO.TMI_6:
+            return PB_NUM.PB_NUM_136
+        elif tmi == TMI_MARCO.TMI_11 or tmi == TMI_MARCO.TMI_12:
+            return PB_NUM.PB_NUM_264
+        elif tmi == TMI_MARCO.TMI_13 or tmi == TMI_MARCO.TMI_14:
+            return PB_NUM.PB_NUM_72
+        elif tmi == TMI_MARCO.TMI_MAX:
+            if extmi >= EXTMI_MARCO.EXTMI_1 and extmi <= EXTMI_MARCO.EXTMI_6:
+                return PB_NUM.PB_NUM_520
+            elif extmi >= EXTMI_MARCO.EXTMI_10 and extmi <= EXTMI_MARCO.EXTMI_14:
+                return PB_NUM.PB_NUM_136
+            else:
+                return 0
+        else:
+            return 0

@@ -14,7 +14,7 @@ import inspect
 import time
 from hplc_cert import debug_leave
 
-# hwq_cfg
+# hwq_cfg  23 23 00 00 00 00 00 00 00 00 00 00 00 00 04 00 00 00 0A 00 1E 00 00 00 00 00 40 40
 hwq_str = "23 23 00 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 0b 00 00 00 16 00 00 00 0b 00 10 00 10 00 01 00 00 00 01 00 00 02 00 00 03 00 00 04 00 00 40 40"
 
 class Base_Param_Type(Structure):

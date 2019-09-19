@@ -48,6 +48,9 @@ class Ui_Form(object):
         self.lcdNumber = QtWidgets.QLCDNumber(Form)
         self.lcdNumber.setGeometry(QtCore.QRect(350, 42, 151, 31))
         self.lcdNumber.setObjectName("lcdNumber")
+        self.pushButton_stop = QtWidgets.QPushButton(Form)
+        self.pushButton_stop.setGeometry(QtCore.QRect(160, 40, 111, 31))
+        self.pushButton_stop.setObjectName("pushButton_stop")
         self.smoe_test.raise_()
         self.tableWidget.raise_()
         self.treeWidget.raise_()
@@ -57,6 +60,7 @@ class Ui_Form(object):
         self.textBrowser.raise_()
         self.pbar.raise_()
         self.lcdNumber.raise_()
+        self.pushButton_stop.raise_()
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -69,3 +73,4 @@ class Ui_Form(object):
         self.open_button.setText(_translate("Form", "初始化设备"))
         self.close_button.setText(_translate("Form", "冻结设备"))
         self.pbar.setFormat(_translate("Form", "%p%"))
+        self.pushButton_stop.setText(_translate("Form", "Stop"))
