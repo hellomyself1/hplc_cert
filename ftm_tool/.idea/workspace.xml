@@ -2,15 +2,23 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c97c0122-51a3-426c-ac6f-5199f6ea3606" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis_tool/log_analysis_entry_cert_mode/Statistics_entry_cert_mode.py" beforeDir="false" afterPath="$PROJECT_DIR$/analysis_tool/log_analysis_entry_cert_mode/Statistics_entry_cert_mode.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/cert_config.ini" beforeDir="false" afterPath="$PROJECT_DIR$/config/cert_config.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ftm_auto.py" beforeDir="false" afterPath="$PROJECT_DIR$/ftm_auto.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ftm_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/ftm_cmd.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hplc_cert.py" beforeDir="false" afterPath="$PROJECT_DIR$/hplc_cert.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/signal_generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/signal_generator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui_hplc.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui_hplc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui_hplc.ui" beforeDir="false" afterPath="$PROJECT_DIR$/ui_hplc.ui" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LOG/hplc_cert2019_09_09_14_11_48.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/pyserial_demo/Analysis-00.toc" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/pyserial_demo/EXE-00.toc" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/pyserial_demo/PKG-00.pkg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/pyserial_demo/PKG-00.toc" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/pyserial_demo/PYZ-00.pyz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/pyserial_demo/PYZ-00.toc" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/pyserial_demo/base_library.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/pyserial_demo/pyserial_demo.exe.manifest" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/pyserial_demo/warn-pyserial_demo.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/pyserial_demo/xref-pyserial_demo.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/HPLC_CERT_demo_V3.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/hplc_cert.exe" beforeDir="false" afterPath="$PROJECT_DIR$/dist/hplc_cert.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/pyserial_demo.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/pyserial_demo111.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/to_wenhao/HPLC_CERT_demo_V3.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyserial_demo.spec" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -166,7 +174,7 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="-9" />
     <option name="y" value="4" />
     <option name="width" value="1936" />
@@ -411,18 +419,17 @@
       <workItem from="1568775092603" duration="9029000" />
       <workItem from="1568804903773" duration="11033000" />
       <workItem from="1568878674974" duration="9122000" />
-      <workItem from="1568888603803" duration="235000" />
+      <workItem from="1568888603803" duration="1188000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="415126000" />
+    <option name="totallyTimeSpent" value="416079000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -436,7 +443,7 @@
       <window_info anchor="bottom" id="Version Control" order="8" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50039065" side_tool="true" weight="0.33716476" />
-      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.49960938" weight="0.2786017" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.49960938" visible="true" weight="0.2786017" />
       <window_info anchor="bottom" id="Python Console" order="12" />
       <window_info anchor="right" id="Coverage" order="0" side_tool="true" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="1" type="SLIDING" weight="0.4" />
