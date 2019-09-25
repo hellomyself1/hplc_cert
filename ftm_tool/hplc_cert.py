@@ -21,6 +21,7 @@ import re
 import binascii
 import struct
 from PyQt5.QtCore import QTimer
+import excel
 
 class debug_leave:
     LOG_DEBUG = 1
@@ -28,6 +29,7 @@ class debug_leave:
     LOG_WARNING = 3
     LOG_ERROR = 4
     LOG_CRITICAL = 5
+
 
 class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
     signal_pbar = pyqtSignal(int)
@@ -41,9 +43,9 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         self.ser = serial.Serial()
 
         self.tree = ui2.treeWidget_class(self.treeWidget, self.tableWidget, self.record_log)
-        self.user = ftm_cmd.ftm_tool(self.record_log)
-        self.auto = ftm_auto.ftm_auto(self.tree.tw, self.signal_txt_emit, self.dut_switch_send_cmd,
-                                      self.ftm_switch_send_cmd, self.user, self.record_log,
+        self.ft = ftm_cmd.FtmTool(self.record_log)
+        self.fa = ftm_auto.FtmAuto(self.tree.tw, self.signal_txt_emit, self.dut_switch_send_cmd,
+                                      self.ftm_switch_send_cmd, self.ft, self.record_log,
                                       self.lcdNumber, self.signal_pbar_emit)
         self.dut_switch_ser = serial.Serial()
         self.ftm_switch_ser = serial.Serial()
@@ -137,9 +139,9 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         if self.ser.isOpen():
             self.record_log(debug_leave.LOG_DEBUG, "cli serial open successed")
             # open rx thread
-            self.user.start_thread(self.ser)
+            self.ft.start_thread(self.ser)
             # set tx data callback
-            self.user.ftm_tx_data_fun(self.data_send_cmd)
+            self.ft.ftm_tx_data_fun(self.data_send_cmd)
 
             self.open_button.setEnabled(False)
             self.close_button.setEnabled(True)
@@ -207,24 +209,24 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         # ftm power on ftm port open
         self.ftm_power_on_serial_port_open()
         # tt serial port open
-        self.auto.tt_ser_open()
+        self.fa.tt_ser_open()
         # lp serial port open
-        self.auto.lp_ser_open()
+        self.fa.lp_ser_open()
         # att control serial port open
-        self.auto.sig_gen.att_control_ser_open()
+        self.fa.sig_gen.att_control_ser_open()
         # open signal generator
-        self.auto.sig_gen.open_signal_generator()
+        self.fa.sig_gen.open_signal_generator()
 
     # close serial
     def port_close(self):
         try:
-            self.user.stop_thread()
-            self.auto.stop_thread()
+            self.ft.stop_thread()
+            self.fa.stop_thread()
             self.ser.close()
             self.dut_switch_ser.close()
             self.ftm_switch_ser.close()
-            self.auto.tt_ser.close()
-            self.auto.att_control_ser.close()
+            self.fa.tt_ser.close()
+            self.fa.att_control_ser.close()
         except:
             self.record_log(debug_leave.LOG_ERROR, "关闭串口出错！")
             pass
@@ -272,6 +274,7 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
             self.ftm_switch_ser.write(input_s)
         else:
             pass
+
     # send data
     def data_send_cmd(self, str_cmd):
         if self.ser.isOpen():
@@ -295,9 +298,15 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
 
     # some_test
     def some_test_func(self):
+        self.excel = excel.ExcelTool()
+        self.excel.excel_init()
+        list = ["TMI遍历 STA band3", 'PASS', 'great']
+        self.excel.excel_write(list)
+        ''''
         self.timer = QTimer(self)  # init timer
-        self.timer.timeout.connect(self.auto.test_case)
+        self.timer.timeout.connect(self.fa.test_case)
         self.timer.start(30*1000)  # start timer
+        '''
 
     # read file test
     def readfile_test(self):
@@ -317,8 +326,8 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         self.tree.tw.table_statistics()
 
     def test_stop(self):
-        self.auto.sig_gen.close_signal_generator()
-        self.auto.auto_close()
+        self.fa.sig_gen.close_signal_generator()
+        self.fa.auto_close()
 
     def log_display(self, str):
         # get test cursor
@@ -330,6 +339,7 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
 
     def pbar_set(self, int):
         self.pbar.setValue(int)
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

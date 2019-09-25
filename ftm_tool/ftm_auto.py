@@ -19,6 +19,7 @@ import signal_generator
 from signal_generator import NARROW_MARCO
 import crc_calu
 
+
 class ATT_VALUE_MARCO:
     # the min value of attenuator
     ATT_VALUE_MIN = 0
@@ -29,21 +30,26 @@ class ATT_VALUE_MARCO:
     # the fine step of attenuator
     ATT_FINE_STEP = 1
 
+
 class RESULT_MARCO:
     PASS_THRESHOLD = 90
+
 
 class OTHER_MARCO:
     TEST_TIMES = 40
 
+
 class PROTO_MARCO:
     PROTO_SG = 0
     PROTO_SPG = 3
+
 
 class BAND_ID_MARCO:
     PROTO_BAND_ID_0 = 0
     PROTO_BAND_ID_1 = 1
     PROTO_BAND_ID_2 = 2
     PROTO_BAND_ID_3 = 3
+
 
 class MODE_MARCO:
      # cert test command enter app layer transparent transfer tx mode, in this
@@ -70,9 +76,11 @@ class MODE_MARCO:
     # cert test command for set tonemask */
     CERT_TEST_CMD_SET_TM = 0x07
 
+
 class POWER_MARCO:
     POWER_ON = 'aa'
     POWER_DOWN = 'bb'
+
 
 class TMI_MARCO:
     TMI_0 = 0
@@ -92,6 +100,7 @@ class TMI_MARCO:
     TMI_14 = 14
     TMI_MAX = 15
 
+
 class EXTMI_MARCO:
     EXTMI_1 = 1
     EXTMI_2 = 2
@@ -106,11 +115,13 @@ class EXTMI_MARCO:
     EXTMI_14 = 14
     EXTMI_MAX = 15
 
+
 class PB_NUM:
     PB_NUM_72 = 72
     PB_NUM_136 = 136
     PB_NUM_264 = 264
     PB_NUM_520 = 520
+
 
 class SIGNOL_MARCO:
     WHITE_TEST = 1
@@ -118,7 +129,8 @@ class SIGNOL_MARCO:
     SIN_TEST = 3
     ATT_TEST = 4
 
-class ftm_auto():
+
+class FtmAuto:
     def __init__(self, table, log_disp, dut_switch_ser, ftm_switch_ser, ftmuser, record_log, lcd, pbar_emit):
         self.record_log = record_log
         self.filename_record = ''
@@ -163,7 +175,7 @@ class ftm_auto():
         self.overnight_cnt = 0
         self.crc_calu = crc_calu.crc_calu()
         self.g_tmi, self.g_extmi = 0, 0
-        self.tmipb = tmi_pb_num()
+        self.tmipb = TmiPbNum()
 
     def auto_close(self):
         self.dut_switch_ser(POWER_MARCO.POWER_DOWN)
@@ -717,9 +729,9 @@ class ftm_auto():
         self.auto_pbar_set(20)
 
         pbar_value = 20
-        # calulate pbar step
+        # calculate pbar stepc
         pbar_step = 80/(tmi_max + extmi_max)
-        print(pbar_step)
+        # print(pbar_step)
 
         # entry rx mode
         self.auto_ftm_rx_config()
@@ -841,10 +853,10 @@ class ftm_auto():
     def sta_tmi_scan_band0(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\协议一致性'
+        patch = '.\\LOG\\cert_log\\协议一致性'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        filename =patch + '\sta_tmi_遍历_band0_' + file_time + '.log'
+        filename = patch + '\\sta_tmi_遍历_band0_' + file_time + '.log'
         self.filename_record = filename
         f = codecs.open(filename, mode='w', encoding='utf-8')
         f.write('*'*20 + 'sta tmi 遍历 band0' + '*'*20 + '\n')
@@ -870,10 +882,10 @@ class ftm_auto():
     def sta_tmi_scan_band1(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\协议一致性'
+        patch = '.\\LOG\\cert_log\\协议一致性'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        filename =patch + '\sta_tmi_遍历_band1_' + file_time + '.log'
+        filename = patch + '\\sta_tmi_遍历_band1_' + file_time + '.log'
         self.filename_record = filename
         f = codecs.open(filename, mode='w', encoding='utf-8')
         f.write('*'*20 + 'sta tmi 遍历 band1' + '*'*20 + '\n')
@@ -899,10 +911,10 @@ class ftm_auto():
     def sta_tmi_scan_band2(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\协议一致性'
+        patch = '.\\LOG\\cert_log\\协议一致性'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        filename =patch + '\sta_tmi_遍历_band2_' + file_time + '.log'
+        filename = patch + '\\sta_tmi_遍历_band2_' + file_time + '.log'
         self.filename_record = filename
         f = codecs.open(filename, mode='w', encoding='utf-8')
         f.write('*'*20 + 'sta tmi 遍历 band2' + '*'*20 + '\n')
@@ -928,10 +940,10 @@ class ftm_auto():
     def sta_tmi_scan_band3(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\协议一致性'
+        patch = '.\\LOG\\cert_log\\协议一致性'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        filename =patch + '\sta_tmi_遍历_band3_' + file_time + '.log'
+        filename = patch + '\\sta_tmi_遍历_band3_' + file_time + '.log'
         self.filename_record = filename
         f = codecs.open(filename, mode='w', encoding='utf-8')
         f.write('*'*20 + 'sta tmi 遍历 band3' + '*'*20 + '\n')
@@ -994,8 +1006,6 @@ class ftm_auto():
 
     # sta tonemask band0
     def sta_tonemask_band0(self):
-
-
         t1 = datetime.now()
         time.sleep(4)
         print(sys._getframe().f_code.co_name)
@@ -1038,10 +1048,10 @@ class ftm_auto():
     def cco_tmi_scan_band0(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\协议一致性'
+        patch ='.\\LOG\\cert_log\\协议一致性'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        filename =patch + '\cco_tmi_遍历_band0_' + file_time + '.log'
+        filename =patch + '\\cco_tmi_遍历_band0_' + file_time + '.log'
         self.filename_record = filename
         f = codecs.open(filename, mode='w', encoding='utf-8')
         f.write('*'*20 + 'cco tmi 遍历 band0' + '*'*20 + '\n')
@@ -1067,10 +1077,10 @@ class ftm_auto():
     def cco_tmi_scan_band1(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\协议一致性'
+        patch = '.\\LOG\\cert_log\\协议一致性'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        filename =patch + '\cco_tmi_遍历_band1_' + file_time + '.log'
+        filename = patch + '\\cco_tmi_遍历_band1_' + file_time + '.log'
         self.filename_record = filename
         f = codecs.open(filename, mode='w', encoding='utf-8')
         f.write('*'*20 + 'cco tmi 遍历 band1' + '*'*20 + '\n')
@@ -1096,10 +1106,10 @@ class ftm_auto():
     def cco_tmi_scan_band2(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\协议一致性'
+        patch = '.\\LOG\\cert_log\\协议一致性'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        filename =patch + '\cco_tmi_遍历_band2_' + file_time + '.log'
+        filename = patch + '\\cco_tmi_遍历_band2_' + file_time + '.log'
         self.filename_record = filename
         f = codecs.open(filename, mode='w', encoding='utf-8')
         f.write('*'*20 + 'cco tmi 遍历 band2' + '*'*20 + '\n')
@@ -1125,10 +1135,10 @@ class ftm_auto():
     def cco_tmi_scan_band3(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\协议一致性'
+        patch = '.\\LOG\\cert_log\\协议一致性'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        filename =patch + '\cco_tmi_遍历_band3_' + file_time + '.log'
+        filename = patch + '\\cco_tmi_遍历_band3_' + file_time + '.log'
         self.filename_record = filename
         f = codecs.open(filename, mode='w', encoding='utf-8')
         f.write('*'*20 + 'cco tmi 遍历 band3' + '*'*20 + '\n')
@@ -1197,10 +1207,10 @@ class ftm_auto():
     def sta_performance_white_noise_band1(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        self.filename_record = patch + '\sta_白噪声_band1_' + file_time + '.log'
+        self.filename_record = patch + '\\sta_白噪声_band1_' + file_time + '.log'
 
         # 获取开始时间
         t_start = datetime.now()
@@ -1234,10 +1244,10 @@ class ftm_auto():
     def sta_performance_white_noise_band2(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        self.filename_record = patch + '\sta_白噪声_band2_' + file_time + '.log'
+        self.filename_record = patch + '\\sta_白噪声_band2_' + file_time + '.log'
 
         # 获取开始时间
         t_start = datetime.now()
@@ -1291,10 +1301,10 @@ class ftm_auto():
     def sta_performance_anti_att_band1(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        self.filename_record = patch + '\sta_抗衰减_band1_' + file_time + '.log'
+        self.filename_record = patch + '\\sta_抗衰减_band1_' + file_time + '.log'
 
         # 获取开始时间
         t_start = datetime.now()
@@ -1327,11 +1337,11 @@ class ftm_auto():
     def sta_performance_anti_att_band2(self):
         #self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
 
-        self.filename_record = patch + '\sta_抗衰减_band2_' + file_time + '.log'
+        self.filename_record = patch + '\\sta_抗衰减_band2_' + file_time + '.log'
 
         # 获取开始时间
         t_start = datetime.now()
@@ -1363,11 +1373,11 @@ class ftm_auto():
     def test_case(self):
         #self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
 
-        self.filename_record = patch + '\sta_抗衰减_band2_' + file_time + '.log'
+        self.filename_record = patch + '\\sta_抗衰减_band2_' + file_time + '.log'
 
         self.overnight_test('sta 抗衰减 band2', BAND_ID_MARCO.PROTO_BAND_ID_2)
 
@@ -1375,10 +1385,10 @@ class ftm_auto():
     def sta_performance_anti_narrow_band1(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        self.filename_record = patch + '\sta_抗窄带_band1_' + file_time + '.log'
+        self.filename_record = patch + '\\sta_抗窄带_band1_' + file_time + '.log'
 
         # 获取开始时间
         t_start = datetime.now()
@@ -1438,10 +1448,10 @@ class ftm_auto():
     def sta_performance_anti_narrow_band2(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        self.filename_record = patch + '\sta_抗窄带_band2_' + file_time + '.log'
+        self.filename_record = patch + '\\sta_抗窄带_band2_' + file_time + '.log'
 
         # 获取开始时间
         t_start = datetime.now()
@@ -1501,10 +1511,10 @@ class ftm_auto():
     def sta_performance_anti_pulse_band1(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        self.filename_record = patch + '\sta_抗脉冲_band1_' + file_time + '.log'
+        self.filename_record = patch + '\\sta_抗脉冲_band1_' + file_time + '.log'
 
         # 获取开始时间
         t_start = datetime.now()
@@ -1537,10 +1547,10 @@ class ftm_auto():
     def sta_performance_anti_pulse_band2(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        self.filename_record = patch + '\sta_抗脉冲_band2_' + file_time + '.log'
+        self.filename_record = patch + '\\sta_抗脉冲_band2_' + file_time + '.log'
 
         # 获取开始时间
         t_start = datetime.now()
@@ -1603,10 +1613,10 @@ class ftm_auto():
     def cco_performance_white_noise_band1(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        self.filename_record = patch + '\cco_白噪声_band1_' + file_time + '.log'
+        self.filename_record = patch + '\\cco_白噪声_band1_' + file_time + '.log'
 
         # 获取开始时间
         t_start = datetime.now()
@@ -1639,10 +1649,10 @@ class ftm_auto():
     def cco_performance_white_noise_band2(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        self.filename_record = patch + '\cco_白噪声_band2_' + file_time + '.log'
+        self.filename_record = patch + '\\cco_白噪声_band2_' + file_time + '.log'
 
         # 获取开始时间
         t_start = datetime.now()
@@ -1695,10 +1705,10 @@ class ftm_auto():
     def cco_performance_anti_att_band1(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        self.filename_record = patch + '\cco_抗衰减_band1_' + file_time + '.log'
+        self.filename_record = patch + '\\cco_抗衰减_band1_' + file_time + '.log'
 
         # 获取开始时间
         t_start = datetime.now()
@@ -1731,10 +1741,10 @@ class ftm_auto():
     def cco_performance_anti_att_band2(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        self.filename_record = patch + '\cco_抗衰减_band2_' + file_time + '.log'
+        self.filename_record = patch + '\\cco_抗衰减_band2_' + file_time + '.log'
 
         # 获取开始时间
         t_start = datetime.now()
@@ -1742,7 +1752,6 @@ class ftm_auto():
         self.auto_test_entry_and_init('cco 抗衰减 band2', BAND_ID_MARCO.PROTO_BAND_ID_2)
         last_value, att_pass_threshold = self.auto_att_interfere_test()
 
-        result = ''
         if last_value > att_pass_threshold:
             result = 'pass'
         else:
@@ -1767,10 +1776,10 @@ class ftm_auto():
     def cco_performance_anti_narrow_band1(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        self.filename_record = patch + '\cco_抗窄带_band1_' + file_time + '.log'
+        self.filename_record = patch + '\\cco_抗窄带_band1_' + file_time + '.log'
 
         # 获取开始时间
         t_start = datetime.now()
@@ -1830,10 +1839,10 @@ class ftm_auto():
     def cco_performance_anti_narrow_band2(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        self.filename_record = patch + '\cco_抗窄带_band2_' + file_time + '.log'
+        self.filename_record = patch + '\\cco_抗窄带_band2_' + file_time + '.log'
 
         # 获取开始时间
         t_start = datetime.now()
@@ -1893,10 +1902,10 @@ class ftm_auto():
     def cco_performance_anti_pulse_band1(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        self.filename_record = patch + '\cco_抗脉冲_band1_' + file_time + '.log'
+        self.filename_record = patch + '\\cco_抗脉冲_band1_' + file_time + '.log'
 
         # 获取开始时间
         t_start = datetime.now()
@@ -1904,7 +1913,6 @@ class ftm_auto():
         self.auto_test_entry_and_init('cco 抗脉冲 band1', BAND_ID_MARCO.PROTO_BAND_ID_1)
         last_value, att_pass_threshold = self.auto_att_interfere_test(SIGNOL_MARCO.PULSE_TEST)
 
-        result = ''
         if last_value > att_pass_threshold:
             result = 'pass'
         else:
@@ -1929,10 +1937,10 @@ class ftm_auto():
     def cco_performance_anti_pulse_band2(self):
         self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        patch ='.\LOG\cert_log\性能测试'
+        patch = '.\\LOG\\cert_log\\性能测试'
         if not os.path.exists(patch):
             os.makedirs(patch)
-        self.filename_record = patch + '\cco_抗脉冲_band2_' + file_time + '.log'
+        self.filename_record = patch + '\\cco_抗脉冲_band2_' + file_time + '.log'
 
         # 获取开始时间
         t_start = datetime.now()
@@ -2080,13 +2088,13 @@ class ftm_auto():
             print("%s is not here" % (index))
 
     def timer_display_start(self):
-        #print("start timer")
+        # print("start timer")
         self.lcd_start_t = datetime.now()
         timer_dlp = threading.Timer(1, self.timer_display_fun)
         timer_dlp.start()
 
     def timer_display_fun(self):
-        #print("i am timer function")
+        # print("i am timer function")
         self.lcd_stop_t = datetime.now()
         t_delt = (self.lcd_stop_t - self.lcd_start_t).seconds
         str_disp = time.strftime("%H:%M:%S", time.gmtime(t_delt))
@@ -2109,7 +2117,10 @@ class ftm_auto():
                 self.timer_flag = 1
                 print("i am happy")
 
-class tmi_pb_num:
+
+class TmiPbNum:
+    def __init__(self):
+        pass
 
     def tmi_get_pb_num(self, tmi, extmi = 0):
         if tmi == TMI_MARCO.TMI_0 or tmi == TMI_MARCO.TMI_1 or (tmi >= TMI_MARCO.TMI_7 and tmi <= TMI_MARCO.TMI_10):

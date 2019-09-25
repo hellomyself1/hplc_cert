@@ -50,7 +50,10 @@ iot_crc24_table = [
 class crc_calu:
     def crc24(self, octets):
         crc = 0 & 0x00FFFFFF
-        for octet in octets:
-            crc = crc ^ octet
-            crc = (crc >> 8) ^ iot_crc24_table[crc & 0x0FF]
+        try:
+            for octet in octets:
+                crc = crc ^ octet
+                crc = (crc >> 8) ^ iot_crc24_table[crc & 0x0FF]
+        except:
+            pass
         return crc & 0x00FFFFFF

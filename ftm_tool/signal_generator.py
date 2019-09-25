@@ -60,7 +60,10 @@ class signal_generator:
         self.inst.write(":OUTP1:LOAD 50")
 
     def close_signal_generator(self):
-        self.inst.write(":OUTPut1:STATe OFF")
+        try:
+            self.inst.write(":OUTPut1:STATe OFF")
+        except:
+            pass
 
     # white noise
     def sg_set_white_noise(self):

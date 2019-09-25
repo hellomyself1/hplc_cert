@@ -207,7 +207,8 @@ class Swrite(Base_Param_Type):  # Sturcture write
                 ('data1', c_uint)
                 ]
 
-class ftm_tool:
+
+class FtmTool:
     # the folder for test case
     # error flag
     error_flag = 0
