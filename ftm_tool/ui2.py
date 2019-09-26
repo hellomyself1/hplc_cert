@@ -1,29 +1,32 @@
 # -*- coding: utf-8 -*-
+
 import sys
 import os
-if hasattr(sys, 'frozen'):
-    os.environ['PATH'] = sys._MEIPASS + ";" + os.environ['PATH']
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QColor
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal
 import queue
-from macro_const import all_cert_case_value, DictCommandInfo
+from macro_const import AllCertCaseValue, DictCommandInfo
 import excel
 
-class treeWidget_class:
-    def __init__(self, treeWidget, tableWidget, record_log):
-        super(treeWidget_class, self).__init__()
+if hasattr(sys, 'frozen'):
+    os.environ['PATH'] = sys._MEIPASS + ";" + os.environ['PATH']
+
+
+class TreeWidgetClass:
+    def __init__(self, treewidget, tablewidget, record_log):
+        super(TreeWidgetClass, self).__init__()
         self.record_log = record_log
+        self.tw, self.treeWidget, self.AllTestCase = None, None, None
 
-        self.member = all_cert_case_value()
-        self.intiUI(treeWidget, tableWidget)
+        self.intiui(treewidget, tablewidget)
 
-    def intiUI(self, treeWidget, tableWidget):
+    def intiui(self, treewidget, tablewidget):
         # 初始化tablewidget模块
-        self.tw = tableWidget_class(tableWidget)
+        self.tw = TableWidgetClass(tablewidget)
 
-        self.treeWidget = treeWidget
+        self.treeWidget = treewidget
         # 设置列数
         self.treeWidget.setColumnCount(1)
         # 设置树形控件头部的标题
@@ -34,49 +37,50 @@ class treeWidget_class:
         self.AllTestCase.setText(0, '测试项')
         self.AllTestCase.setCheckState(0, Qt.Unchecked)
 
-        #  初始化数组
-        self.tree_list = [0 for i in range(self.member.TREE_MAX)]
-        #print(self.tree_list)
+        item_protocon, item_sta_father, item_cco_father, item_prerf_father = None, None, None, None
 
         for value in DictCommandInfo.keys():
-            #print(value)
-            #print(DictCommandInfo[value])
-            if DictCommandInfo[value] == self.member.ROOT_PROTOCON:
-                self.tree_list[self.member.ROOT_PROTOCON] = QTreeWidgetItem(self.AllTestCase)
-                self.tree_list[self.member.ROOT_PROTOCON].setText(0, value)
-                self.tree_list[self.member.ROOT_PROTOCON].setCheckState(0, Qt.Unchecked)
-            elif DictCommandInfo[value] == all_cert_case_value.ROOT_PROTOCON_STA_CHILD:
-                self.tree_list[DictCommandInfo[value]] = QTreeWidgetItem(self.tree_list[self.member.ROOT_PROTOCON])
-                self.tree_list[DictCommandInfo[value]].setText(0, value)
-                self.tree_list[DictCommandInfo[value]].setCheckState(0, Qt.Unchecked)
-            elif DictCommandInfo[value] < self.member.ROOT_PROTOCON_STA_MAX and DictCommandInfo[value] > self.member.ROOT_PROTOCON_STA_CHILD:
-                self.tree_list[DictCommandInfo[value]] = QTreeWidgetItem(self.tree_list[self.member.ROOT_PROTOCON_STA_CHILD])
-                self.tree_list[DictCommandInfo[value]].setText(0, value)
-                self.tree_list[DictCommandInfo[value]].setCheckState(0, Qt.Unchecked)
-            elif DictCommandInfo[value] == all_cert_case_value.ROOT_PROTOCON_CCO_CHILD:
-                self.tree_list[DictCommandInfo[value]] = QTreeWidgetItem(self.tree_list[self.member.ROOT_PROTOCON])
-                self.tree_list[DictCommandInfo[value]].setText(0, value)
-                self.tree_list[DictCommandInfo[value]].setCheckState(0, Qt.Unchecked)
-            elif DictCommandInfo[value] < self.member.ROOT_PROTOCON_CCO_MAX and DictCommandInfo[value] > self.member.ROOT_PROTOCON_CCO_CHILD:
-                self.tree_list[DictCommandInfo[value]] = QTreeWidgetItem(self.tree_list[self.member.ROOT_PROTOCON_CCO_CHILD])
-                self.tree_list[DictCommandInfo[value]].setText(0, value)
-                self.tree_list[DictCommandInfo[value]].setCheckState(0, Qt.Unchecked)
-            elif DictCommandInfo[value] == all_cert_case_value.ROOT_PERFORMANCE_CHILD:
-                self.tree_list[DictCommandInfo[value]] = QTreeWidgetItem(self.AllTestCase)
-                self.tree_list[DictCommandInfo[value]].setText(0, value)
-                self.tree_list[DictCommandInfo[value]].setCheckState(0, Qt.Unchecked)
-            elif DictCommandInfo[value] < self.member.ROOT_PERFORMANCE_MAX and DictCommandInfo[value] > self.member.ROOT_PERFORMANCE_CHILD:
-                self.tree_list[DictCommandInfo[value]] = QTreeWidgetItem(self.tree_list[self.member.ROOT_PERFORMANCE_CHILD])
-                self.tree_list[DictCommandInfo[value]].setText(0, value)
-                self.tree_list[DictCommandInfo[value]].setCheckState(0, Qt.Unchecked)
+            # print(value)
+            # print(DictCommandInfo[value])
+            if DictCommandInfo[value] == AllCertCaseValue.ROOT_PROTOCON:
+                item_protocon = QTreeWidgetItem(self.AllTestCase)
+                item_protocon.setText(0, value)
+                item_protocon.setCheckState(0, Qt.Unchecked)
+            elif DictCommandInfo[value] == AllCertCaseValue.ROOT_PROTOCON_STA_CHILD:
+                item_sta_father = QTreeWidgetItem(item_protocon)
+                item_sta_father.setText(0, value)
+                item_sta_father.setCheckState(0, Qt.Unchecked)
+            elif AllCertCaseValue.ROOT_PROTOCON_STA_CHILD < DictCommandInfo[value] < \
+                    AllCertCaseValue.ROOT_PROTOCON_STA_MAX:
+                item_sta_child = QTreeWidgetItem(item_sta_father)
+                item_sta_child.setText(0, value)
+                item_sta_child.setCheckState(0, Qt.Unchecked)
+            elif DictCommandInfo[value] == AllCertCaseValue.ROOT_PROTOCON_CCO_CHILD:
+                item_cco_father = QTreeWidgetItem(item_protocon)
+                item_cco_father.setText(0, value)
+                item_cco_father.setCheckState(0, Qt.Unchecked)
+            elif AllCertCaseValue.ROOT_PROTOCON_CCO_CHILD < DictCommandInfo[value] < \
+                    AllCertCaseValue.ROOT_PROTOCON_CCO_MAX:
+                item_cco_child = QTreeWidgetItem(item_cco_father)
+                item_cco_child.setText(0, value)
+                item_cco_child.setCheckState(0, Qt.Unchecked)
+            elif DictCommandInfo[value] == AllCertCaseValue.ROOT_PERFORMANCE_CHILD:
+                item_prerf_father = QTreeWidgetItem(self.AllTestCase)
+                item_prerf_father.setText(0, value)
+                item_prerf_father.setCheckState(0, Qt.Unchecked)
+            elif AllCertCaseValue.ROOT_PERFORMANCE_CHILD < DictCommandInfo[value] < \
+                    AllCertCaseValue.ROOT_PERFORMANCE_MAX:
+                item_perf_child = QTreeWidgetItem(item_prerf_father)
+                item_perf_child.setText(0, value)
+                item_perf_child.setCheckState(0, Qt.Unchecked)
 
         # 节点全部展开
         self.treeWidget.expandAll()
 
-        #self.treeWidget.itemClicked.connect(self.handleChanged)
-        self.treeWidget.itemChanged.connect(self.handleChanged)
+        # self.treeWidget.itemClicked.connect(self.handlechanged)
+        self.treeWidget.itemChanged.connect(self.handlechanged)
 
-    def handleChanged(self, item, column):
+    def handlechanged(self, item, column):
         count = item.childCount()
         if item.checkState(column) == Qt.Checked:
             if count == 0:
@@ -94,12 +98,15 @@ class treeWidget_class:
                     item.child(f).setCheckState(0, Qt.Unchecked)
                     self.tw.table_remove(item.text(0))
 
-class tableWidget_class(QWidget):
+
+class TableWidgetClass(QWidget):
     signal2 = pyqtSignal(list)
 
-    def __init__(self, tableWidget):
-        super(tableWidget_class, self).__init__()
-        self.initUI(tableWidget)
+    def __init__(self, tablewidget):
+        # noinspection PyArgumentList
+        super(TableWidgetClass, self).__init__()
+        self.tableWidget = None
+        self.initui(tablewidget)
         self.twrowcnt = 0
         self.handle_queue = queue.Queue(maxsize=100)
         # 连接发射函数
@@ -107,23 +114,23 @@ class tableWidget_class(QWidget):
         # excel
         self.excel = excel.ExcelTool()
 
-    def signal2emit(self, list):
-        self.signal2.emit(list)  # 朝connect的函数发射一个tuple
+    def signal2emit(self, list_info):
+        self.signal2.emit(list_info)  # 朝connect的函数发射一个tuple
 
-    def initUI(self, tableWidget):
+    def initui(self, tablewidget):
         layout = QHBoxLayout()
 
-        self.tableWidget = tableWidget
+        self.tableWidget = tablewidget
         self.tableWidget.setColumnCount(4)
         self.tableWidget.setRowCount(0)
         # 字体颜色（红色）
-        #self.tableWidget.item(1, 0).setForeground(QColor("red"))
-        #self.tableWidget.item(1, 1).setBackground(QColor("red"))
-        #newItem = QTableWidgetItem('hellomsss')
-        #self.tableWidget.setItem(1, 0, newItem)
-        #print(self.tableWidget.item(1, 0).text())
-        #self.tableWidget.item(1, 0).setForeground(QColor("black"))
-        #self.tableWidget.item(1, 0).setBackground(QColor("red"))
+        # self.tableWidget.item(1, 0).setForeground(QColor("red"))
+        # self.tableWidget.item(1, 1).setBackground(QColor("red"))
+        # newItem = QTableWidgetItem('hellomsss')
+        # self.tableWidget.setItem(1, 0, newItem)
+        # print(self.tableWidget.item(1, 0).text())
+        # self.tableWidget.item(1, 0).setForeground(QColor("black"))
+        # self.tableWidget.item(1, 0).setBackground(QColor("red"))
 
         # 设置头label
         self.tableWidget.setHorizontalHeaderLabels(['测试用例', '执行时间', '结果', '备注'])
@@ -139,23 +146,24 @@ class tableWidget_class(QWidget):
         # 优化 4 设置表格整行选中
         self.tableWidget.setSelectionBehavior(QAbstractItemView.SelectRows)
 
+        # noinspection PyArgumentList
         layout.addWidget(self.tableWidget)
 
-        #self.setLayout(layout)
+        # self.setLayout(layout)
 
-    def table_append(self, str):
-        if str == 'CCO测试项' or str == 'STA测试项' or str == '协议一致性' \
-                or str == '通信性能测试':
+    def table_append(self, str_info):
+        if str_info == 'CCO测试项' or str_info == 'STA测试项' or str_info == '协议一致性' \
+                or str_info == '通信性能测试':
             return
-        item = self.tableWidget.findItems(str, Qt.MatchExactly)
+        item = self.tableWidget.findItems(str_info, Qt.MatchExactly)
         if not item:
             row = self.tableWidget.rowCount()
             self.tableWidget.insertRow(row)
-            newItem = QTableWidgetItem(str)
-            self.tableWidget.setItem(row, 0, newItem)
+            newitem = QTableWidgetItem(str_info)
+            self.tableWidget.setItem(row, 0, newitem)
 
-    def table_remove(self, str):
-        item = self.tableWidget.findItems(str, Qt.MatchExactly)
+    def table_remove(self, str_info):
+        item = self.tableWidget.findItems(str_info, Qt.MatchExactly)
         if item:
             row = item[0].row()
             self.tableWidget.removeRow(row)
@@ -172,20 +180,19 @@ class tableWidget_class(QWidget):
         if self.handle_queue.empty():
             print("this is grade")
 
-    def table_get_row(self, str):
-        item = self.tableWidget.findItems(str, Qt.MatchExactly)
+    def table_get_row(self, str_info):
+        item = self.tableWidget.findItems(str_info, Qt.MatchExactly)
         if not item:
             row = self.tableWidget.rowCount()
             return row
 
-    def table_set_item(self, list):
-        f_str = list[0]
-        exe_time = list[1]
-        result = list[2]
-        remarks = list[3]
+    def table_set_item(self, list_info):
+        f_str = list_info[0]
+        exe_time = list_info[1]
+        result = list_info[2]
+        remarks = list_info[3]
         item = self.tableWidget.findItems(f_str, Qt.MatchExactly)
-        #print("ttttttttttt")
-        bcolor = ''
+        # print("ttttttttttt")
         if item:
             if result == 'pass':
                 bcolor = 'green'
@@ -197,23 +204,23 @@ class tableWidget_class(QWidget):
             row = item[0].row()
             for idx in range(4):
                 if idx == 0:
-                    newItem = QTableWidgetItem(f_str)
-                    self.tableWidget.setItem(row, idx, newItem)
+                    newitem = QTableWidgetItem(f_str)
+                    self.tableWidget.setItem(row, idx, newitem)
                     # set red
                     self.tableWidget.item(row, idx).setBackground(QColor(bcolor))
                 elif idx == 1:
-                    newItem = QTableWidgetItem(exe_time)
-                    self.tableWidget.setItem(row, idx, newItem)
+                    newitem = QTableWidgetItem(exe_time)
+                    self.tableWidget.setItem(row, idx, newitem)
                     # set red
                     self.tableWidget.item(row, idx).setBackground(QColor(bcolor))
                 elif idx == 2:
-                    newItem = QTableWidgetItem(result)
-                    self.tableWidget.setItem(row, idx, newItem)
+                    newitem = QTableWidgetItem(result)
+                    self.tableWidget.setItem(row, idx, newitem)
                     # set red
                     self.tableWidget.item(row, idx).setBackground(QColor(bcolor))
                 elif idx == 3:
-                    newItem = QTableWidgetItem(remarks)
-                    self.tableWidget.setItem(row, idx, newItem)
+                    newitem = QTableWidgetItem(remarks)
+                    self.tableWidget.setItem(row, idx, newitem)
                     # set red
                     self.tableWidget.item(row, idx).setBackground(QColor(bcolor))
-        self.excel.excel_write(list)
+        self.excel.excel_write(list_info)

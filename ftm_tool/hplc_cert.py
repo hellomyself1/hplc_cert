@@ -1,13 +1,12 @@
+# -*- coding: utf-8 -*-
+
 import sys
 import os
-if hasattr(sys, 'frozen'):
-    os.environ['PATH'] = sys._MEIPASS + ";" + os.environ['PATH']
 import serial
 import serial.tools.list_ports
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QMessageBox, QTextEdit, QLCDNumber
-from PyQt5.QtCore import QTimer
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QMessageBox, QLCDNumber
+from PyQt5.QtCore import pyqtSignal, QTimer
 from ui_hplc import Ui_Form
 import ftm_cmd
 import ui2
@@ -16,39 +15,33 @@ import ftm_auto
 from datetime import *
 import time
 import logging
-import fileinput
-import re
-import binascii
-import struct
-from PyQt5.QtCore import QTimer
 import excel
+from macro_const import DebugLeave
 
-class debug_leave:
-    LOG_DEBUG = 1
-    LOG_INFO = 2
-    LOG_WARNING = 3
-    LOG_ERROR = 4
-    LOG_CRITICAL = 5
+if hasattr(sys, 'frozen'):
+    os.environ['PATH'] = sys._MEIPASS + ";" + os.environ['PATH']
 
 
-class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
+class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
     signal_pbar = pyqtSignal(int)
     signal_txt = pyqtSignal(str)
+
     def __init__(self):
-        super(Pyqt5_Serial, self).__init__()
+        super(Pyqt5Hplc, self).__init__()
         self.setupUi(self)
         self.init()
         self.initlogging()
         self.setWindowTitle("HPLC 测试系统")
         self.ser = serial.Serial()
 
-        self.tree = ui2.treeWidget_class(self.treeWidget, self.tableWidget, self.record_log)
+        self.tree = ui2.TreeWidgetClass(self.treeWidget, self.tableWidget, self.record_log)
         self.ft = ftm_cmd.FtmTool(self.record_log)
         self.fa = ftm_auto.FtmAuto(self.tree.tw, self.signal_txt_emit, self.dut_switch_send_cmd,
                                       self.ftm_switch_send_cmd, self.ft, self.record_log,
                                       self.lcdNumber, self.signal_pbar_emit)
         self.dut_switch_ser = serial.Serial()
         self.ftm_switch_ser = serial.Serial()
+        self.config = None
 
     def init(self):
 
@@ -77,7 +70,8 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
 
         # config
         self.config = configparser.ConfigParser()
-        config_file = ".\config\cert_config.ini"
+        config_file = ".\\config\\cert_config.ini"
+        # noinspection PyBroadException
         try:
             self.config.read(config_file, encoding="utf-8")
         except Exception:
@@ -89,25 +83,26 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
     def signal_txt_emit(self, str):
         self.signal_txt.emit(str)
 
-    def initlogging(self):
+    @staticmethod
+    def initlogging():
         file_name = os.path.split(__file__)[-1].split(".")[0]
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        logging.basicConfig(filename='./LOG/' + file_name + file_time  + '.log',
+        logging.basicConfig(filename='./LOG/' + file_name + file_time + '.log',
                             format='%(asctime)s - %(pathname)s[line:%(lineno)d] - %(levelname)s: %(message)s',
                             level=logging.DEBUG,
                             filemode='a', datefmt='%Y-%m-%d %I:%M:%S %p')
 
     # record log
     def record_log(self, leave, str_info):
-        if leave == debug_leave.LOG_DEBUG:
+        if leave == DebugLeave.LOG_DEBUG:
             logging.debug(str_info)
-        elif leave == debug_leave.LOG_INFO:
+        elif leave == DebugLeave.LOG_INFO:
             logging.info(str_info)
-        elif leave == debug_leave.LOG_WARNING:
+        elif leave == DebugLeave.LOG_WARNING:
             logging.warning(str_info)
-        elif leave == debug_leave.LOG_ERROR:
+        elif leave == DebugLeave.LOG_ERROR:
             logging.error(str_info)
-        elif leave == debug_leave.LOG_CRITICAL:
+        elif leave == DebugLeave.LOG_CRITICAL:
             logging.critical(str_info)
         else:
             logging.error("this leave %d do not support" % leave)
@@ -125,19 +120,19 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         if self.config.has_option("cli_config", "s1_parity"):
             self.ser.parity = self.config.get("cli_config", "s1_parity")
 
-        self.record_log(debug_leave.LOG_DEBUG, 'cli serial config ' + self.ser.port + ' %s' % self.ser.baudrate +
+        self.record_log(DebugLeave.LOG_DEBUG, 'cli serial config ' + self.ser.port + ' %s' % self.ser.baudrate +
                         ' %s' % self.ser.bytesize + ' %s' % self.ser.stopbits + ' ' + self.ser.parity)
-
+        # noinspection PyBroadException
         try:
             self.ser.open()
-            self.record_log(debug_leave.LOG_ERROR, "cli serial open successed!")
-        except:
+            self.record_log(DebugLeave.LOG_ERROR, "cli serial open successed!")
+        except Exception:
             QMessageBox.critical(self, "Port Error", "cli串口不能被打开！")
-            self.record_log(debug_leave.LOG_ERROR, "cli串口不能被打开！")
+            self.record_log(DebugLeave.LOG_ERROR, "cli串口不能被打开！")
             return None
 
         if self.ser.isOpen():
-            self.record_log(debug_leave.LOG_DEBUG, "cli serial open successed")
+            self.record_log(DebugLeave.LOG_DEBUG, "cli serial open successed")
             # open rx thread
             self.ft.start_thread(self.ser)
             # set tx data callback
@@ -158,19 +153,19 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         if self.config.has_option("dut_switch_config", "s3_parity"):
             self.dut_switch_ser.parity = self.config.get("dut_switch_config", "s3_parity")
 
-        self.record_log(debug_leave.LOG_DEBUG, 'dut power on serial config ' + self.dut_switch_ser.port +
+        self.record_log(DebugLeave.LOG_DEBUG, 'dut power on serial config ' + self.dut_switch_ser.port +
                         ' %s' % self.dut_switch_ser.baudrate + ' %s' % self.dut_switch_ser.bytesize +
                         ' %s' % self.dut_switch_ser.stopbits + ' ' + self.dut_switch_ser.parity)
 
         if self.dut_switch_ser.isOpen():
-            self.record_log(debug_leave.LOG_DEBUG, "dut power on serial open successed")
-
+            self.record_log(DebugLeave.LOG_DEBUG, "dut power on serial open successed")
+        # noinspection PyBroadException
         try:
             self.dut_switch_ser.open()
-            self.record_log(debug_leave.LOG_ERROR, "dut power on serial open successed!")
-        except:
+            self.record_log(DebugLeave.LOG_ERROR, "dut power on serial open successed!")
+        except Exception:
             QMessageBox.critical(self, "Port Error", "dut power on串口不能被打开！")
-            self.record_log(debug_leave.LOG_ERROR, "dut power on 串口不能被打开！")
+            self.record_log(DebugLeave.LOG_ERROR, "dut power on 串口不能被打开！")
             return None
 
     def ftm_power_on_serial_port_open(self):
@@ -185,19 +180,19 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         if self.config.has_option("ftm_switch_config", "s6_parity"):
             self.ftm_switch_ser.parity = self.config.get("ftm_switch_config", "s6_parity")
 
-        self.record_log(debug_leave.LOG_DEBUG, 'ftm power on serial config ' + self.ftm_switch_ser.port +
+        self.record_log(DebugLeave.LOG_DEBUG, 'ftm power on serial config ' + self.ftm_switch_ser.port +
                         ' %s' % self.ftm_switch_ser.baudrate + ' %s' % self.ftm_switch_ser.bytesize +
                         ' %s' % self.ftm_switch_ser.stopbits + ' ' + self.ftm_switch_ser.parity)
 
         if self.ftm_switch_ser.isOpen():
-            self.record_log(debug_leave.LOG_DEBUG, "ftm power on serial open successed")
-
+            self.record_log(DebugLeave.LOG_DEBUG, "ftm power on serial open successed")
+        # noinspection PyBroadException
         try:
             self.ftm_switch_ser.open()
-            self.record_log(debug_leave.LOG_ERROR, "ftm power on serial open successed!")
-        except:
+            self.record_log(DebugLeave.LOG_ERROR, "ftm power on serial open successed!")
+        except Exception:
             QMessageBox.critical(self, "Port Error", "ftm power on串口不能被打开！")
-            self.record_log(debug_leave.LOG_ERROR, "ftm power on 串口不能被打开！")
+            self.record_log(DebugLeave.LOG_ERROR, "ftm power on 串口不能被打开！")
             return None
 
     # open serial
@@ -219,6 +214,7 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
 
     # close serial
     def port_close(self):
+        # noinspection PyBroadException
         try:
             self.ft.stop_thread()
             self.fa.stop_thread()
@@ -227,8 +223,8 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
             self.ftm_switch_ser.close()
             self.fa.tt_ser.close()
             self.fa.att_control_ser.close()
-        except:
-            self.record_log(debug_leave.LOG_ERROR, "关闭串口出错！")
+        except Exception:
+            self.record_log(DebugLeave.LOG_ERROR, "关闭串口出错！")
             pass
         self.open_button.setEnabled(True)
         self.close_button.setEnabled(False)
@@ -298,20 +294,22 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
 
     # some_test
     def some_test_func(self):
+        '''
         self.excel = excel.ExcelTool()
         self.excel.excel_init()
         list = ["TMI遍历 STA band3", 'PASS', 'great']
         self.excel.excel_write(list)
-        ''''
+        '''
+
         self.timer = QTimer(self)  # init timer
         self.timer.timeout.connect(self.fa.test_case)
         self.timer.start(30*1000)  # start timer
-        '''
 
     # read file test
     def readfile_test(self):
         config = configparser.ConfigParser()
-        config_file = ".\config\cert_config.ini"
+        config_file = ".\\config\\cert_config.ini"
+        # noinspection PyBroadException
         try:
             config.read(config_file, encoding="utf-8")
         except Exception:
@@ -329,20 +327,20 @@ class Pyqt5_Serial(QtWidgets.QWidget, Ui_Form):
         self.fa.sig_gen.close_signal_generator()
         self.fa.auto_close()
 
-    def log_display(self, str):
+    def log_display(self, str_info):
         # get test cursor
-        textCursor = self.textBrowser.textCursor()
+        textcursor = self.textBrowser.textCursor()
         # move cursor to end
-        self.textBrowser.moveCursor(textCursor.End)
+        self.textBrowser.moveCursor(textcursor.End)
 
-        self.textBrowser.insertPlainText(str)
+        self.textBrowser.insertPlainText(str_info)
 
-    def pbar_set(self, int):
-        self.pbar.setValue(int)
+    def pbar_set(self, val):
+        self.pbar.setValue(val)
 
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
-    myshow = Pyqt5_Serial()
+    myshow = Pyqt5Hplc()
     myshow.show()
     sys.exit(app.exec_())

@@ -12,7 +12,7 @@ import threading
 import ctypes
 import inspect
 import time
-from hplc_cert import debug_leave
+from macro_const import DebugLeave
 
 # hwq_cfg  23 23 00 00 00 00 00 00 00 00 00 00 00 00 04 00 00 00 0A 00 1E 00 00 00 00 00 40 40
 hwq_str = "23 23 00 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 0b 00 00 00 16 00 00 00 0b 00 10 00 10 00 01 00 00 00 01 00 00 02 00 00 03 00 00 04 00 00 40 40"
@@ -289,14 +289,14 @@ class FtmTool:
             print("cmd error\n")
             return
 
-        #self.record_log(debug_leave.LOG_DEBUG, '*' * 20 + "Sending Start" + "*" * 25)
-        #self.record_log(debug_leave.LOG_DEBUG, r"The Command case is : %s, The ModuleID is: %s, The MessageID is: %s"
+        #self.record_log(DebugLeave.LOG_DEBUG, '*' * 20 + "Sending Start" + "*" * 25)
+        #self.record_log(DebugLeave.LOG_DEBUG, r"The Command case is : %s, The ModuleID is: %s, The MessageID is: %s"
         #             % (msg_info, module_id, message_id))
 
         if (msg_info.find('load') >= 0):
             test_case_file = self.TestCaseFolder + "\\" + file_name + r".txt"
             if not os.path.exists(test_case_file):
-                self.record_log(debug_leave.LOG_ERROR, "Load File does not exist! ")
+                self.record_log(DebugLeave.LOG_ERROR, "Load File does not exist! ")
                 error_flag = 1
                 return
 
@@ -360,12 +360,12 @@ class FtmTool:
             if len(structure_param_list) == len(structure_value_list):
                 for i in range(len(structure_param_list)):
                     execstr = r"t.", structure_param_list[i], r" = ", structure_value_list[i]
-                    exec (''.join(execstr), locals())
+                    exec(''.join(execstr), locals())
             try:
                 if param_str:
                     param_list = param_str.split(" ")
                     dic_param = r"DicParam_" + command
-                    if (len(param_list) % 2 == 0 and param_list[0].find("-") == 0):
+                    if len(param_list) % 2 == 0 and param_list[0].find("-") == 0:
                         i = 0
                         while i < len(param_list):
                             pm = re.match(r"\A(-[a-z]+)(\d+)\Z", param_list[i])
@@ -387,11 +387,11 @@ class FtmTool:
                                 exec(''.join(execstr), locals())
                             i += 2
                     else:
-                        self.record_log(debug_leave.LOG_ERROR, "The Parameters not matched, please check ....")
+                        self.record_log(DebugLeave.LOG_ERROR, "The Parameters not matched, please check ....")
                         error_flag = 1
                         return
             except Exception:
-                self.record_log(debug_leave.LOG_ERROR, "Error: The Parameters not matched, please check ....")
+                self.record_log(DebugLeave.LOG_ERROR, "Error: The Parameters not matched, please check ....")
                 error_flag = 1
                 return
             if re.match(r"\s*load\s+ping_tput\s*(.*)\Z", msg_info):
@@ -423,7 +423,7 @@ class FtmTool:
                         else:
                             i_num = int(param_list[num - 1])
                     except Exception:
-                        self.record_log(debug_leave.LOG_ERROR, r"Parameters Error...Please Check Command!")
+                        self.record_log(DebugLeave.LOG_ERROR, r"Parameters Error...Please Check Command!")
                         error_flag = 1
                         return
                     send_list.append(i_num)
@@ -446,15 +446,16 @@ class FtmTool:
                     if t.data1 % 4 == 0:
                         pass
                     else:
-                        logger.info(r"Warning: num of bytes to read should be a mutiple of 4...")
+                        self.record_log(DebugLeave.LOG_ERROR,
+                                        r"Warning: num of bytes to read should be a mutiple of 4...")
                         if t.data1 / 4 == 0:
                             t.data1 = 4
                         else:
                             t.data1 = 4 * (t.data1 / 4)
                 elif re.match(r"\s*dtest\s+write\s+0x(\w+)(-0x(\w+))?\s+0x(\w+)\s*\Z", msg_info):
-                    if (len(send_list) == 2):
+                    if len(send_list) == 2:
                         t.data0, t.data1 = send_list
-                    elif (len(send_list) == 3):
+                    elif len(send_list) == 3:
                         num_value = (send_list[1] - send_list[0]) / 4 + 1
 
                         class WriteRange(Base_Param_Type):
@@ -489,7 +490,7 @@ class FtmTool:
                         t.data1 = send_list[0]
                         self.multi_return_flag = "1"
                     else:
-                        self.record_log(debug_leave.LOG_ERROR,
+                        self.record_log(DebugLeave.LOG_ERROR,
                                         r"Parameters out of range, it should be [-24:60], please reload...")
                         error_flag = 1
                         return
@@ -497,8 +498,6 @@ class FtmTool:
                     t.enable, t.sel, t.pb_offset = send_list
                     sniffer_flag = t.enable
                     if sniffer_flag == 1:
-                        if os.path.exists(Result_Log):
-                            os.remove(Result_Log)
                         index_num = 0
                         truncate_flag = 1
                     elif sniffer_flag == 0:
@@ -519,24 +518,24 @@ class FtmTool:
                     if 0 <= t.data0 <= 3 and 0 <= t.data1 <= 7 and 0 <= t.data2 <= 3:
                         t.data0, t.data1, t.data2 = send_list
                     else:
-                        logger.info(r"Parameters out of range, please reload...")
+                        self.record_log(DebugLeave.LOG_ERROR, r"Parameters out of range, please reload...")
                         error_flag = 1
                         return
                 elif re.match(r"\s*dtest\s+burn mac"
                               r"\s+(\w{2})\s+(\w{2})\s+(\w{2})\s+(\w{2})\s+(\w{2})\s+(\w{2})\s*\Z", msg_info):
                     t.data0, t.data1, t.data2, t.data3, t.data4, t.data5 = send_list
                 else:
-                    self.record_log(debug_leave.LOG_ERROR, r"Parameters format were illegal, please reload...")
+                    self.record_log(DebugLeave.LOG_ERROR, r"Parameters format were illegal, please reload...")
                     error_flag = 1
                     return
             elif command in NoneParamCommandList:
                 pass
             else:
-                self.record_log(debug_leave.LOG_ERROR, r"Command Parameters missing, please reload...")
+                self.record_log(DebugLeave.LOG_ERROR, r"Command Parameters missing, please reload...")
                 error_flag = 1
                 return
         else:
-            self.record_log(debug_leave.LOG_ERROR, r"Error: Command Not Matched! Please check the issue...")
+            self.record_log(DebugLeave.LOG_ERROR, r"Error: Command Not Matched! Please check the issue...")
             len_buffer = 0
             error_flag = 1
             return
@@ -548,7 +547,7 @@ class FtmTool:
         while i < len(p_list):
             p_list.insert(i, " ")
             i += 3
-        self.record_log(debug_leave.LOG_DEBUG, "Packed Data String at: %s --- %s" % (sat_ascii_str, "".join(p_list)))
+        self.record_log(DebugLeave.LOG_DEBUG, "Packed Data String at: %s --- %s" % (sat_ascii_str, "".join(p_list)))
 
         str_data = sat_ascii_str
         str_preinfo = str_data[0:6 * 2]  # cmd_id total_len len: 6 bytes
@@ -568,7 +567,7 @@ class FtmTool:
                 str_send_data = str_head + str_moduleid + str_messageid + str_totallen + str_data + str_tail
                 self.comd_flag = str_preinfo[0:4]
                 time.sleep(1)
-                self.record_log(debug_leave.LOG_DEBUG, "Pkt data segment " + str(i + 1) + " send: %s" % str_send_data)
+                self.record_log(DebugLeave.LOG_DEBUG, "Pkt data segment " + str(i + 1) + " send: %s" % str_send_data)
                 sum_pkt += 100 * 2
             if remainder_pkt != 0:
                 str_totallen = struct.pack('<I', remainder_pkt + 6).encode("hex")
@@ -576,7 +575,7 @@ class FtmTool:
                 str_data = str_preinfo[0:8] + str_datalen + str_data_ex_preinfo[-(remainder_pkt * 2):]
                 str_send_data = str_head + str_moduleid + str_messageid + str_totallen + str_data + str_tail
                 self.comd_flag = str_preinfo[0:4]
-                self.record_log(debug_leave.LOG_DEBUG,
+                self.record_log(DebugLeave.LOG_DEBUG,
                                 "Pkt data segment " + str(send_times_pkt + 1) + " send: %s" % str_send_data)
         else:
             str_head = r"2323" + r"00" * 12
@@ -593,7 +592,7 @@ class FtmTool:
         sinfo = b''
         while 1:
             qinfo_bytes_str = self.notice_queue.get(1)
-            self.record_log(debug_leave.LOG_DEBUG, "return: %s" % qinfo_bytes_str.decode("utf-8"))
+            self.record_log(DebugLeave.LOG_DEBUG, "return: %s" % qinfo_bytes_str.decode("utf-8"))
             sinfo = binascii.unhexlify(qinfo_bytes_str)
             total_data = sinfo[2: -2]  # remove starter 2323 and end marker 4040
             big_head_fmt = '<6B6B2H2I'  # 24
@@ -617,37 +616,37 @@ class FtmTool:
                 data_valid = data_msg_body[len_little_header_fmt:-3]
                 ''''
                 if (rid != 0x0f and rid != 0x0e):
-                    self.record_log(debug_leave.LOG_DEBUG, '-' * 20 + "CallBacking End" + "-" * 25)
-                    self.record_log(debug_leave.LOG_DEBUG, "Unpacked Head Data: %s" % str(unpack_data_big_header))
-                    self.record_log(debug_leave.LOG_DEBUG, "Cmd_ID: %s, Total_len: %s, Len: %s" % (rid, tlen, dlen))
+                    self.record_log(DebugLeave.LOG_DEBUG, '-' * 20 + "CallBacking End" + "-" * 25)
+                    self.record_log(DebugLeave.LOG_DEBUG, "Unpacked Head Data: %s" % str(unpack_data_big_header))
+                    self.record_log(DebugLeave.LOG_DEBUG, "Cmd_ID: %s, Total_len: %s, Len: %s" % (rid, tlen, dlen))
                 '''
                 if 0 == tlen == dlen:
-                    self.record_log(debug_leave.LOG_ERROR, "Error: Data length should't be 0")
+                    self.record_log(DebugLeave.LOG_ERROR, "Error: Data length should't be 0")
                     continue
 
                 if rid == DictCommandInfo["hwq_cfg"] and tlen == dlen:
-                    self.record_log(debug_leave.LOG_DEBUG, self.msg_info_cmd + " command tx successed")
+                    self.record_log(DebugLeave.LOG_DEBUG, self.msg_info_cmd + " command tx successed")
                     self.response_queue.put(self.msg_info_cmd)
                 elif rid == DictCommandInfo["set_band"] and tlen == dlen:
-                    self.record_log(debug_leave.LOG_DEBUG, self.msg_info_cmd + " command tx successed")
+                    self.record_log(DebugLeave.LOG_DEBUG, self.msg_info_cmd + " command tx successed")
                     self.response_queue.put(self.msg_info_cmd)
                 elif rid == DictCommandInfo["pkt_cfg"] and tlen == dlen:
-                    self.record_log(debug_leave.LOG_DEBUG, self.msg_info_cmd + " command tx successed")
+                    self.record_log(DebugLeave.LOG_DEBUG, self.msg_info_cmd + " command tx successed")
                     self.response_queue.put(self.msg_info_cmd)
                 elif rid == DictCommandInfo["pkt_data"] and tlen == dlen:
-                    self.record_log(debug_leave.LOG_DEBUG, self.msg_info_cmd + " command tx successed")
+                    self.record_log(DebugLeave.LOG_DEBUG, self.msg_info_cmd + " command tx successed")
                     self.response_queue.put(self.msg_info_cmd)
                 elif rid == DictCommandInfo["test_case"] and tlen == dlen: 
-                    self.record_log(debug_leave.LOG_DEBUG, self.msg_info_cmd + " command tx successed")
+                    self.record_log(DebugLeave.LOG_DEBUG, self.msg_info_cmd + " command tx successed")
                     self.response_queue.put(self.msg_info_cmd)
                 elif rid == DictCommandInfo["ring_cfg"] and tlen == dlen:
-                    self.record_log(debug_leave.LOG_DEBUG, self.msg_info_cmd + " command tx successed")
+                    self.record_log(DebugLeave.LOG_DEBUG, self.msg_info_cmd + " command tx successed")
                     self.response_queue.put(self.msg_info_cmd)
                 elif rid == DictCommandInfo["read"] and tlen == dlen:
-                    self.record_log(debug_leave.LOG_DEBUG, data_valid)
+                    self.record_log(DebugLeave.LOG_DEBUG, data_valid)
                     self.response_queue.put(data_valid)
                 else:
-                    self.record_log(debug_leave.LOG_ERROR, "this rid %d no support" % rid)
+                    self.record_log(DebugLeave.LOG_ERROR, "this rid %d no support" % rid)
 
     def collect_info_from_ser(self, serport):
         length_fmt = struct.Struct('<I')
@@ -705,8 +704,8 @@ class FtmTool:
                         self.pack_info = self.pack_info.replace(utest_m.group(0), b"")
                         self.comd_flag = b''
                     else:
-                        self.record_log(debug_leave.LOG_ERROR, "Error: Uart Stress Test Received package Length Mismatched!")
-                        self.record_log(debug_leave.LOG_ERROR, "Will Auto Discard Packet:\n %s\n" % utest_m.group(0))
+                        self.record_log(DebugLeave.LOG_ERROR, "Error: Uart Stress Test Received package Length Mismatched!")
+                        self.record_log(DebugLeave.LOG_ERROR, "Will Auto Discard Packet:\n %s\n" % utest_m.group(0))
                         self.pack_info = self.pack_info.replace(utest_m.group(0), b"")
                         self.comd_flag = b''
                         continue
@@ -728,12 +727,12 @@ class FtmTool:
 
         try:
             response = self.response_queue.get(timeout=5)
-            self.record_log(debug_leave.LOG_DEBUG, 'send cmd %s successed!' % str_cmd)
+            self.record_log(DebugLeave.LOG_DEBUG, 'send cmd %s successed!' % str_cmd)
             if str_cmd.find('read') >= 0:
                 return response
             return response
         except Exception:
-            self.record_log(debug_leave.LOG_ERROR, 'send cmd something wrong!!')
+            self.record_log(DebugLeave.LOG_ERROR, 'send cmd something wrong!!')
             return ret
 
     # kill child thread

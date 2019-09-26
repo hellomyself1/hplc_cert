@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
+
 import xlsxwriter
 import time
 import os
 import xlwt
 import xlrd
 from xlutils.copy import copy
-from openpyxl import load_workbook
-from macro_const import all_cert_case_value, DictCommandInfo
+from macro_const import AllCertCaseValue, DictCommandInfo
+
 
 class ExcelTool:
     def __init__(self):
@@ -23,7 +24,9 @@ class ExcelTool:
         workbook.close()
         self.excel_init()
 
-    def excel_style(self, font_height, align_h, align_v, bold=0, align_wrap=1, align_shri=0, pattern_color=None, borders_set=None):
+    @staticmethod
+    def excel_style(font_height, align_h, align_v, bold=0, align_wrap=1, align_shri=0, pattern_color=None,
+                    borders_set=None):
         font = xlwt.Font()
         font.name = '宋体'
         font.height = font_height
@@ -69,7 +72,8 @@ class ExcelTool:
             style.pattern = pattern_top
         return style
 
-    def keys_get_value(self, mydict, keys):
+    @staticmethod
+    def keys_get_value(mydict, keys):
         for key, val in mydict.items():
             if key == keys:
                 return val
@@ -105,56 +109,59 @@ class ExcelTool:
         ws.write(0, 4, '备注', style)
 
         # 协议一致性 sta/cco 测试项目个数
-        pro_sta_cnt = all_cert_case_value.ROOT_PROTOCON_STA_MAX - all_cert_case_value.ROOT_PROTOCON_STA_CHILD - 1
-        pro_cco_cnt = all_cert_case_value.ROOT_PROTOCON_CCO_MAX - all_cert_case_value.ROOT_PROTOCON_CCO_CHILD - 1
-        performance_cnt = all_cert_case_value.ROOT_PERFORMANCE_MAX - all_cert_case_value.ROOT_PERFORMANCE_CHILD - 1
+        pro_sta_cnt = AllCertCaseValue.ROOT_PROTOCON_STA_MAX - AllCertCaseValue.ROOT_PROTOCON_STA_CHILD - 1
+        pro_cco_cnt = AllCertCaseValue.ROOT_PROTOCON_CCO_MAX - AllCertCaseValue.ROOT_PROTOCON_CCO_CHILD - 1
+        performance_cnt = AllCertCaseValue.ROOT_PERFORMANCE_MAX - AllCertCaseValue.ROOT_PERFORMANCE_CHILD - 1
 
         for keys in DictCommandInfo.keys():
-            if DictCommandInfo[keys] == all_cert_case_value.ROOT_PROTOCON:
+            if DictCommandInfo[keys] == AllCertCaseValue.ROOT_PROTOCON:
                 style = self.excel_style(20 * 14, 0x02, 0x01, 0, borders_set=1)
                 start_idx = 1
                 end_idx = pro_sta_cnt + pro_cco_cnt
                 ws.write_merge(start_idx, end_idx, 0, 0, keys, style)
 
-            elif DictCommandInfo[keys] == all_cert_case_value.ROOT_PROTOCON_STA_CHILD:
+            elif DictCommandInfo[keys] == AllCertCaseValue.ROOT_PROTOCON_STA_CHILD:
                 style = self.excel_style(20 * 12, 0x02, 0x01, 0, borders_set=1)
                 start_idx = 1
                 end_idx = pro_sta_cnt
                 ws.write_merge(start_idx, end_idx, 1, 1, keys, style)
 
-            elif DictCommandInfo[keys] < all_cert_case_value.ROOT_PROTOCON_STA_MAX and DictCommandInfo[keys] > all_cert_case_value.ROOT_PROTOCON_STA_CHILD:
+            elif AllCertCaseValue.ROOT_PROTOCON_STA_CHILD < DictCommandInfo[keys] < \
+                    AllCertCaseValue.ROOT_PROTOCON_STA_MAX:
                 val = self.keys_get_value(DictCommandInfo, keys)
-                val -= all_cert_case_value.ROOT_PROTOCON_STA_CHILD
+                val -= AllCertCaseValue.ROOT_PROTOCON_STA_CHILD
                 # sta 协议一致性case
                 style = self.excel_style(20 * 12, 0x01, 0x01, 0, borders_set=1)
                 col = val
                 row = 2
                 ws.write(col, row, keys, style)
 
-            elif DictCommandInfo[keys] == all_cert_case_value.ROOT_PROTOCON_CCO_CHILD:
+            elif DictCommandInfo[keys] == AllCertCaseValue.ROOT_PROTOCON_CCO_CHILD:
                 style = self.excel_style(20 * 12, 0x02, 0x01, 0, borders_set=1)
                 start_idx = 1 + pro_sta_cnt
                 end_idx = pro_sta_cnt + pro_cco_cnt
                 ws.write_merge(start_idx, end_idx, 1, 1, keys, style)
 
-            elif DictCommandInfo[keys] < all_cert_case_value.ROOT_PROTOCON_CCO_MAX and DictCommandInfo[keys] > all_cert_case_value.ROOT_PROTOCON_CCO_CHILD:
+            elif AllCertCaseValue.ROOT_PROTOCON_CCO_CHILD < DictCommandInfo[keys] < \
+                    AllCertCaseValue.ROOT_PROTOCON_CCO_MAX:
                 # cco 协议一致性case
                 val = self.keys_get_value(DictCommandInfo, keys)
-                val -= all_cert_case_value.ROOT_PROTOCON_CCO_CHILD
+                val -= AllCertCaseValue.ROOT_PROTOCON_CCO_CHILD
                 style = self.excel_style(20 * 12, 0x01, 0x01, 0, borders_set=1)
                 col = pro_sta_cnt + val
                 row = 2
                 ws.write(col, row, keys, style)
 
-            elif DictCommandInfo[keys] == all_cert_case_value.ROOT_PERFORMANCE_CHILD:
+            elif DictCommandInfo[keys] == AllCertCaseValue.ROOT_PERFORMANCE_CHILD:
                 style = self.excel_style(20 * 14, 0x02, 0x01, 0, borders_set=1)
                 start_idx = pro_sta_cnt + pro_cco_cnt + 1
                 end_idx = pro_sta_cnt + pro_cco_cnt + performance_cnt
                 ws.write_merge(start_idx, end_idx, 0, 1, keys, style)
 
-            elif DictCommandInfo[keys] < all_cert_case_value.ROOT_PERFORMANCE_MAX and DictCommandInfo[keys] > all_cert_case_value.ROOT_PERFORMANCE_CHILD:
+            elif AllCertCaseValue.ROOT_PERFORMANCE_CHILD < DictCommandInfo[keys] < \
+                    AllCertCaseValue.ROOT_PERFORMANCE_MAX:
                 val = self.keys_get_value(DictCommandInfo, keys)
-                val -= all_cert_case_value.ROOT_PERFORMANCE_CHILD
+                val -= AllCertCaseValue.ROOT_PERFORMANCE_CHILD
                 # 性能测试
                 style = self.excel_style(20 * 12, 0x01, 0x01, 0, borders_set=1)
                 col = pro_sta_cnt + pro_cco_cnt + val
@@ -174,8 +181,8 @@ class ExcelTool:
         # 另存为excel文件，并将文件命名
         new_excel.save(self.filename)
 
-    def excel_write(self, list):
-        name, times, result, remark = list
+    def excel_write(self, list_info):
+        name, times, result, remark = list_info
 
         # 打开想要更改的excel文件
         old_excel = xlrd.open_workbook(self.filename, formatting_info=True)
@@ -204,6 +211,3 @@ class ExcelTool:
 
         # 另存为excel文件，并将文件命名
         new_excel.save(self.filename)
-
-
-
