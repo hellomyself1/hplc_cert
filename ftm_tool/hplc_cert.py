@@ -2,6 +2,8 @@
 
 import sys
 import os
+if hasattr(sys, 'frozen'):
+    os.environ['PATH'] = sys._MEIPASS + ";" + os.environ['PATH']
 import serial
 import serial.tools.list_ports
 from PyQt5 import QtWidgets
@@ -18,9 +20,6 @@ import logging
 import excel
 from macro_const import DebugLeave
 
-if hasattr(sys, 'frozen'):
-    os.environ['PATH'] = sys._MEIPASS + ";" + os.environ['PATH']
-
 
 class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
     signal_pbar = pyqtSignal(int)
@@ -29,6 +28,7 @@ class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
     def __init__(self):
         super(Pyqt5Hplc, self).__init__()
         self.setupUi(self)
+        self.config = None
         self.init()
         self.initlogging()
         self.setWindowTitle("HPLC 测试系统")
@@ -37,11 +37,10 @@ class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
         self.tree = ui2.TreeWidgetClass(self.treeWidget, self.tableWidget, self.record_log)
         self.ft = ftm_cmd.FtmTool(self.record_log)
         self.fa = ftm_auto.FtmAuto(self.tree.tw, self.signal_txt_emit, self.dut_switch_send_cmd,
-                                      self.ftm_switch_send_cmd, self.ft, self.record_log,
-                                      self.lcdNumber, self.signal_pbar_emit)
+                                   self.ftm_switch_send_cmd, self.ft, self.record_log,
+                                   self.lcdNumber, self.signal_pbar_emit)
         self.dut_switch_ser = serial.Serial()
         self.ftm_switch_ser = serial.Serial()
-        self.config = None
 
     def init(self):
 
@@ -300,10 +299,11 @@ class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
         list = ["TMI遍历 STA band3", 'PASS', 'great']
         self.excel.excel_write(list)
         '''
-
-        self.timer = QTimer(self)  # init timer
-        self.timer.timeout.connect(self.fa.test_case)
-        self.timer.start(30*1000)  # start timer
+        self.fa.sig_gen.sg_set_ppm(300)
+        # self.dut_switch_send_cmd('A0 01 01 A2')
+        # self.timer = QTimer(self)  # init timer
+        # self.timer.timeout.connect(self.fa.test_case)
+        # self.timer.start(30*1000)  # start timer
 
     # read file test
     def readfile_test(self):

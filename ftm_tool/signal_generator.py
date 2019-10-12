@@ -90,7 +90,7 @@ class SignalGenerator:
         if config_tmp.has_option("signal_generator", "pulse_cfg"):
             pulse_cfg = config_tmp.get("signal_generator", "pulse_cfg")
 
-        # set channel 1, nuit dbm
+        # set channel 1, nuit vpp
         self.inst.write("SOUR1:VOLT:UNIT VPP")
         self.inst.write(":SOUR1:APPL:PULS " + pulse_cfg)
         self.inst.write(":SOUR1:APPL?")
@@ -282,3 +282,28 @@ class SignalGenerator:
         str_set_cmd = 'SA1 %d' % att_value
         self.att_control_send_cmd(str_set_cmd)
         # TODO: need closed-loop test. read and check
+
+    # ppm set
+    # 0ppm -> 25M clock
+    # setp: 25HZ(0.000025MHZ)
+    # value: absolute frequency deviation 绝对频偏 HZ
+    def sg_set_ppm(self, value):
+        # output off
+        self.inst.write(":OUTPut2:STATe OFF")
+        self.inst.write("SOUR2:VOLT:UNIT VPP")
+        # 25M standard
+        signal_input = 25000000 + (value * 25)
+        signal_str = "%d, 4, 0, 0" % signal_input
+
+        print(signal_str)
+
+        self.inst.write(":SOUR2:APPL:SIN " + signal_str)
+        self.inst.write(":SOUR2:APPL?")
+        sin_cfg = 'sin2 config:' + self.inst.read()
+        print(sin_cfg)
+        self.record_log(DebugLeave.LOG_DEBUG, sin_cfg)
+        # output on
+        self.inst.write(":OUTPut2:STATe ON")
+
+
+

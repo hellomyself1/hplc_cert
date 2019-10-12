@@ -2,6 +2,8 @@
 
 import sys
 import os
+if hasattr(sys, 'frozen'):
+    os.environ['PATH'] = sys._MEIPASS + ";" + os.environ['PATH']
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QColor
 from PyQt5.QtCore import Qt
@@ -9,9 +11,6 @@ from PyQt5.QtCore import pyqtSignal
 import queue
 from macro_const import AllCertCaseValue, DictCommandInfo
 import excel
-
-if hasattr(sys, 'frozen'):
-    os.environ['PATH'] = sys._MEIPASS + ";" + os.environ['PATH']
 
 
 class TreeWidgetClass:

@@ -298,4 +298,19 @@ class ResultMarco:
 
 
 class OtherMarco:
-    TEST_TIMES = 40
+    ATT_TEST_TIMES = 40
+    PPM_TEST_TIMES = 10
+
+
+class PpmMarco:
+    PPM_MIN = 0
+    PPM_MAX = 500
+    PPM_LARGE_STEP = 50
+    PPM_MIDDLE_STEP = 10
+    PPM_SMALL_STEP = 1
+    # 30PPM
+    PPM_THRESHOLD = 30
+    # positive and nagative frequency offset
+    PPM_POSITIVE = 1
+    PPM_NAGATIVE = -1
+

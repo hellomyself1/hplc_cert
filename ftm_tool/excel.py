@@ -183,6 +183,8 @@ class ExcelTool:
 
     def excel_write(self, list_info):
         name, times, result, remark = list_info
+        if result == 'white':
+            return
 
         # 打开想要更改的excel文件
         old_excel = xlrd.open_workbook(self.filename, formatting_info=True)
@@ -206,7 +208,7 @@ class ExcelTool:
             style = self.excel_style(20 * 12, 0x02, 0x01, 0, pattern_color=2, borders_set=1)
         ws.write(row_lid, 3, result, style)
 
-        style = self.excel_style(20 * 12, 0x02, 0x01, 0, borders_set=1)
+        style = self.excel_style(20 * 12, 0x02, 0x00, 0, borders_set=1)
         ws.write(row_lid, 4, remark, style)
 
         # 另存为excel文件，并将文件命名

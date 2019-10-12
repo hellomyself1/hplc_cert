@@ -17,7 +17,7 @@ import crc_calu
 import ctypes
 import inspect
 from macro_const import AttValueMarco, OtherMarco, ProtoMarco, BandIdMarco, ModeMarco, PowerMarco, NarrowMarco
-from macro_const import TmiMarco, ExtmiMarco, PbNumMarco, SignolMarco, DebugLeave, AllCertCaseValue
+from macro_const import TmiMarco, ExtmiMarco, PbNumMarco, SignolMarco, DebugLeave, AllCertCaseValue, PpmMarco
 
 
 class FtmAuto:
@@ -205,7 +205,8 @@ class FtmAuto:
                 continue
 
             str_info = str(self.pack_info, encoding='utf-8')
-
+            # print('receive_data:' + str_info)
+            # print('send_data:' + str_compare)
             self.log_display_record('receive_data:' + str_info, 0)
             self.log_display_record('send_data:' + str_compare, 0)
 
@@ -416,12 +417,14 @@ class FtmAuto:
         self.record_log(DebugLeave.LOG_DEBUG, '*' * 20 + str_info + '*' * 20)
         # start run
         self.log_display_record("开始测试" + str_info)
+        time.sleep(5)
         self.log_display_record("台体开始上电" + str_info)
         self.dut_switch_ser(PowerMarco.POWER_DOWN)
         self.ftm_switch_ser(PowerMarco.POWER_ON)
         time.sleep(2)
 
         self.log_display_record("初始化台体")
+        self.sig_gen.sg_set_ppm(0)
         # proto = sg, band = 2
         self.auto_init_ftm(ProtoMarco.PROTO_SG, BandIdMarco.PROTO_BAND_ID_2)
         # set att init 0db + default att 20db
@@ -479,7 +482,7 @@ class FtmAuto:
             self.auto_ftm_tx_beacon()
             compare_cnt, compare_rate, fail_cnt = 0, 0, 0
             # send test pkt
-            for i in range(OtherMarco.TEST_TIMES):
+            for i in range(OtherMarco.ATT_TEST_TIMES):
                 # rough tuning is no longer pass, into next stage
                 if i - compare_cnt > 10:
                     break
@@ -508,7 +511,7 @@ class FtmAuto:
                 else:
                     self.log_display_record("other fail! %d" % i)
                 time.sleep(0.5)
-            compare_rate = (compare_cnt * 100) / OtherMarco.TEST_TIMES
+            compare_rate = (compare_cnt * 100) / OtherMarco.ATT_TEST_TIMES
             self.log_display_record("衰减值为: %d 的时候, 成功率为: %d" % (att_value, compare_rate))
             # rate > threshold , continue. else entry next stage
             if compare_rate >= att_success_rate:
@@ -541,7 +544,7 @@ class FtmAuto:
                 self.auto_ftm_tx_beacon()
                 compare_cnt, compare_rate, fail_cnt = 0, 0, 0
                 # send test pkt
-                for i in range(OtherMarco.TEST_TIMES):
+                for i in range(OtherMarco.ATT_TEST_TIMES):
                     # current testing, more than 10 packages can not be received
                     if i - compare_cnt > 10:
                         break
@@ -570,7 +573,7 @@ class FtmAuto:
                     else:
                         self.log_display_record("other fail! %d" % i)
                     time.sleep(0.5)
-                    compare_rate = (compare_cnt * 100) / OtherMarco.TEST_TIMES
+                    compare_rate = (compare_cnt * 100) / OtherMarco.ATT_TEST_TIMES
                 self.log_display_record("衰减值为: %d 的时候, 成功率为: %d" % (att_fine_value, compare_rate))
                 # rate > threshold , continue. else entry next stage
                 if compare_rate >= att_success_rate:
@@ -589,6 +592,7 @@ class FtmAuto:
         str_ftm = "开始测试 " + str_title
         self.log_display_record(str_ftm)
         str_ftm = "台体开始上电"
+        time.sleep(5)
         self.dut_switch_ser(PowerMarco.POWER_DOWN)
         self.ftm_switch_ser(PowerMarco.POWER_ON)
         self.sig_gen.auto_set_att_control(0)
@@ -638,7 +642,13 @@ class FtmAuto:
         remark = ''
         for tmi in range(tmi_max):
             if band_id == BandIdMarco.PROTO_BAND_ID_2 and tmi == TmiMarco.TMI_7:
+                # band2 tmi7 overflow symbolnum 511
                 continue
+            elif band_id == BandIdMarco.PROTO_BAND_ID_3:
+                # band3 tmi3/7/6/9/12 overflow symbolnum 511
+                if tmi == TmiMarco.TMI_3 or tmi == TmiMarco.TMI_7 or tmi == TmiMarco.TMI_8 or tmi == TmiMarco.TMI_9 \
+                        or tmi == TmiMarco.TMI_12:
+                    continue
             compare_flag = 0
             test_cnt += 1
             self.log_display_record("发送5个beacon")
@@ -871,8 +881,10 @@ class FtmAuto:
         # start run
         self.overnight_cnt += 1
         self.log_display_record(" 台体开始上电 %d" % self.overnight_cnt)
-        self.dut_switch_ser(PowerMarco.POWER_DOWN)
-        self.ftm_switch_ser(PowerMarco.POWER_ON)
+        # close A0 01 00 A1
+        self.dut_switch_ser('A0 01 00 A1')
+        # self.dut_switch_ser(PowerMarco.POWER_DOWN)
+        # self.ftm_switch_ser(PowerMarco.POWER_ON)
         time.sleep(3)
         self.log_display_record(" 初始化台体")
         # proto = sg, band = 2
@@ -882,7 +894,9 @@ class FtmAuto:
         # self.dut_switch_ser(PowerMarco.POWER_DOWN)
 
         self.log_display_record(" 模块上电")
-        self.dut_switch_ser(PowerMarco.POWER_ON)
+        # open
+        self.dut_switch_ser('A0 01 01 A2')
+        # self.dut_switch_ser(PowerMarco.POWER_ON)
         time.sleep(8)
 
         self.log_display_record(" 开始发送设置band的包")
@@ -898,8 +912,10 @@ class FtmAuto:
         self.log_display_record(" 发送进入透传模式的包结束  开始发送测试包")
 
         # time.sleep(10)
-        self.dut_switch_ser(PowerMarco.POWER_DOWN)
-        self.ftm_switch_ser(PowerMarco.POWER_DOWN)
+        # self.dut_switch_ser(PowerMarco.POWER_DOWN)
+        # self.ftm_switch_ser(PowerMarco.POWER_DOWN)
+        # close A0 01 00 A1
+        self.dut_switch_ser('A0 01 00 A1')
         self.sig_gen.close_signal_generator()
 
     # sta tonemask band0
@@ -1171,23 +1187,173 @@ class FtmAuto:
         self.ftm_switch_ser(PowerMarco.POWER_DOWN)
         self.sig_gen.close_signal_generator()
 
+    # p_n_ppm: positive and negative frequency offset
+    def auto_ppm_test(self, p_n_ppm):
+        ppm_value = 0
+        self.sig_gen.sg_set_ppm(ppm_value)
+        self.auto_ftm_tx_beacon()
+        judge_flag = 1
+        ppm_step = (PpmMarco.PPM_LARGE_STEP * p_n_ppm)
+        while judge_flag:
+            ppm_value += ppm_step
+            self.sig_gen.sg_set_ppm(ppm_value)
+            self.log_display_record("设置的频偏值为:%d  并发送5个beacon" % ppm_value)
+            # send beacon
+            self.auto_ftm_tx_beacon()
+            compare_cnt, compare_rate, fail_cnt = 0, 0, 0
+            # send test pkt
+            for i in range(OtherMarco.PPM_TEST_TIMES):
+                # rough tuning is no longer pass, into next stage
+                if i - compare_cnt > 10:
+                    break
+                # get fc
+                self.auto_ftm_tx_test_pkt(TmiMarco.TMI_4)
+                time.sleep(0.5)
+                self.pack_compare = self.auto_ftm_get_fc_info()
+
+                self.compare_queue.queue.clear()
+                self.data_record_flag = 1
+
+                self.g_tmi = TmiMarco.TMI_4
+                self.g_extmi = 0
+                self.auto_ftm_tx_test_pkt(TmiMarco.TMI_4)
+                # noinspection PyBroadException
+                try:
+                    str_info = self.compare_queue.get(timeout=5)
+                except Exception:
+                    str_info = 'compare_fail'
+
+                if str_info == 'compare_pass':
+                    compare_cnt += 1
+                    self.log_display_record("receive success cnt:%d" % compare_cnt)
+                elif str_info == 'compare_fail':
+                    fail_cnt += 1
+                    self.log_display_record("compare fail! %d" % fail_cnt)
+                else:
+                    self.log_display_record("other fail! %d" % i)
+                time.sleep(0.5)
+                self.data_record_flag = 0
+            compare_rate = (compare_cnt * 100) / OtherMarco.PPM_TEST_TIMES
+            self.log_display_record("频偏值为: %d 的时候, 成功率为: %d" % (ppm_value, compare_rate))
+            if compare_rate < 90:
+                if ppm_step == (PpmMarco.PPM_LARGE_STEP * p_n_ppm):
+                    ppm_value -= ppm_step
+                    ppm_step = (PpmMarco.PPM_MIDDLE_STEP * p_n_ppm)
+                    ppm_value -= ppm_step
+                elif ppm_step == (PpmMarco.PPM_MIDDLE_STEP * p_n_ppm):
+                    ppm_value -= ppm_step
+                    ppm_step = (PpmMarco.PPM_SMALL_STEP * p_n_ppm)
+                    ppm_value -= ppm_step
+                elif ppm_step == (PpmMarco.PPM_SMALL_STEP * p_n_ppm):
+                    ppm_value -= ppm_step
+                    judge_flag = 0
+                else:
+                    print("ppm test something error!!")
+                    assert 0
+        if ppm_value > (PpmMarco.PPM_THRESHOLD * p_n_ppm):
+            result = 'pass'
+        else:
+            result = 'fail'
+
+        self.sig_gen.sg_set_ppm(0)
+        self.log_display_record("设置的频偏值为:%d  并发送5个beacon" % ppm_value)
+        # send beacon
+        self.auto_ftm_tx_beacon()
+
+        return [ppm_value, result]
+
     # sta anti-ppm band1
     def sta_performance_anti_ppm_band1(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["抗频偏性能 STA band1", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch = '.\\LOG\\cert_log\\性能测试'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        self.filename_record = patch + '\\sta_抗频偏性能_band1_' + file_time + '.log'
+
+        # 获取开始时间
+        t_start = datetime.now()
+        self.data_record_flag = 0
+
+        self.auto_test_entry_and_init('sta 抗频偏性能 band1', BandIdMarco.PROTO_BAND_ID_1)
+        # positive ppm test
+        positive_ppm_value, positive_result = self.auto_ppm_test(PpmMarco.PPM_POSITIVE)
+
+        remark = 'positive ppm test is :  %d ppm \n' % positive_ppm_value
+
+        self.auto_pbar_set(50)
+
+        # positive ppm test
+        nagative_ppm_value, nagative_result = self.auto_ppm_test(PpmMarco.PPM_NAGATIVE)
+
+        remark += 'nagative ppm test is :  %d ppm \n' % nagative_ppm_value
+
+        if positive_result == 'pass' and nagative_result == 'pass':
+            result = 'pass'
+        else:
+            result = 'fail'
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["抗频偏性能 STA band1", '%s' % dlt_t, result, remark])
+
+        self.log_display_record("抗频偏性能 STA band1 抗频偏值为: %s " % remark)
+        self.log_display_record("测试结束, 结果: %s " % result)
+
+        self.auto_pbar_set(100)
+
+        # clear status
+        self.data_record_flag = 0
+        self.dut_switch_ser(PowerMarco.POWER_DOWN)
+        self.ftm_switch_ser(PowerMarco.POWER_DOWN)
+        self.sig_gen.close_signal_generator()
 
     # sta anti-ppm band2
     def sta_performance_anti_ppm_band2(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["抗频偏性能 STA band2", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch = '.\\LOG\\cert_log\\性能测试'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        self.filename_record = patch + '\\sta_抗频偏性能_band2_' + file_time + '.log'
+
+        # 获取开始时间
+        t_start = datetime.now()
+
+        self.auto_test_entry_and_init('sta 抗频偏性能 band2', BandIdMarco.PROTO_BAND_ID_2)
+        # positive ppm test
+        positive_ppm_value, positive_result = self.auto_ppm_test(PpmMarco.PPM_POSITIVE)
+
+        remark = 'positive ppm test is :  %d ppm \n' % positive_ppm_value
+
+        self.auto_pbar_set(50)
+
+        # positive ppm test
+        nagative_ppm_value, nagative_result = self.auto_ppm_test(PpmMarco.PPM_POSITIVE)
+
+        remark += 'nagative ppm test is :  %d ppm \n' % nagative_ppm_value
+
+        if positive_result == 'pass' and nagative_result == 'pass':
+            result = 'pass'
+        else:
+            result = 'fail'
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["抗频偏性能 STA band2", '%s' % dlt_t, result, remark])
+
+        self.log_display_record("抗频偏性能 STA band2 抗频偏值为: %s " % remark)
+        self.log_display_record("测试结束, 结果: %s " % result)
+
+        self.auto_pbar_set(100)
+
+        # clear status
+        self.data_record_flag = 0
+        self.dut_switch_ser(PowerMarco.POWER_DOWN)
+        self.ftm_switch_ser(PowerMarco.POWER_DOWN)
+        self.sig_gen.close_signal_generator()
 
     # sta anti-attenuation band1
     def sta_performance_anti_att_band1(self):
@@ -1475,23 +1641,167 @@ class FtmAuto:
         self.ftm_switch_ser(PowerMarco.POWER_DOWN)
         self.sig_gen.close_signal_generator()
 
+    def loopback_psd_handle(self, str_title, band_id, tmi):
+        # start run
+        str_ftm = "开始测试 " + str_title
+        self.log_display_record(str_ftm)
+        str_ftm = "台体开始上电"
+        time.sleep(5)
+        self.dut_switch_ser(PowerMarco.POWER_DOWN)
+        self.ftm_switch_ser(PowerMarco.POWER_ON)
+        self.sig_gen.auto_set_att_control(0)
+        self.log_display_record(str_ftm)
+        time.sleep(5)
+
+        str_ftm = "初始化台体"
+        self.log_display_record(str_ftm)
+        # proto = sg, band = 2
+        self.auto_init_ftm(ProtoMarco.PROTO_SG, BandIdMarco.PROTO_BAND_ID_2)
+
+        str_ftm = "模块上电"
+        self.log_display_record(str_ftm)
+        self.dut_switch_ser(PowerMarco.POWER_ON)
+        time.sleep(5)
+
+        self.auto_pbar_set(5)
+
+        str_ftm = "开始发送设置band的包"
+        self.log_display_record(str_ftm)
+        self.auto_ftm_set_band(ProtoMarco.PROTO_SG, band_id)
+        # proto = sg, band = 0
+        self.auto_ftm_set_self_band(ProtoMarco.PROTO_SG, band_id)
+
+        self.auto_pbar_set(10)
+
+        str_ftm = "开始发送测试包"
+        self.log_display_record(str_ftm)
+        self.auto_ftm_tx_test_pkt(TmiMarco.TMI_4)
+
+        self.auto_pbar_set(20)
+
+        pbar_value = 20
+        # calculate pbar stepc 100 pkt
+        pbar_step = 80/100
+        # print(pbar_step)
+
+        # entry rx mode
+        self.auto_ftm_rx_config()
+
+        # send test pkt
+        str_ftm = "开始发送进入回传模式的包"
+        self.log_display_record(str_ftm)
+        self.auto_ftm_entry_mode(ProtoMarco.PROTO_SG, ModeMarco.CERT_TEST_CMD_ENTER_PHY_LP)
+        self.data_record_flag = 0
+        compare_flag, compare_cnt, test_cnt, fail_cnt = 0, 0, 0, 0
+        self.log_display_record("发送5个beacon")
+        # send beacon
+        self.auto_ftm_tx_beacon()
+
+        compare_flag = 0
+        for times in range(100):
+            test_cnt += 1
+            if compare_flag == 0 and test_cnt >= 10:
+                break
+            # pre-send pkt and get fc
+            self.auto_ftm_tx_test_pkt(tmi)
+            # delay 0.5s and get correct fc
+            time.sleep(0.5)
+            # get config fc
+            self.pack_compare = self.auto_ftm_get_fc_info()
+
+            self.compare_queue.queue.clear()
+            self.data_record_flag = 1
+            self.g_tmi = tmi
+            self.g_extmi = 0
+            self.auto_ftm_tx_test_pkt(tmi)
+            # noinspection PyBroadException
+            try:
+                str_info = self.compare_queue.get(timeout=2)
+            except Exception:
+                str_info = 'compare_fail'
+
+            if str_info == 'compare_pass':
+                compare_cnt += 1
+                compare_flag = 1
+                str_l = "tmi %d loopback test success. %d times." % (tmi, compare_cnt)
+                self.log_display_record(str_l)
+            elif str_info == 'compare_fail':
+                fail_cnt += 1
+                str_l = "tmi %d loopback test fail. %d times" % (tmi, fail_cnt)
+                self.log_display_record(str_l)
+            else:
+                str_l = "other fail! %d" % tmi
+                self.log_display_record(str_l)
+            self.data_record_flag = 0
+            time.sleep(0.5)
+            # set pbar value
+            pbar_value += pbar_step
+            self.auto_pbar_set(pbar_value)
+
+        if compare_cnt >= 90:
+            result = 'pass'
+        else:
+            result = 'fail'
+        remark = 'receive success cnt: %d' % compare_cnt
+        return [result, remark]
+
     # sta psd band1
     def sta_performance_psd_band1(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["功率频谱密度 STA band1", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch = '.\\LOG\\cert_log\\性能测试'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        self.filename_record = patch + '\\sta_功率频谱密度_band1_' + file_time + '.log'
+
+        # 获取开始时间
+        t_start = datetime.now()
+        result, remark = self.loopback_psd_handle('功率频谱密度 STA band1', BandIdMarco.PROTO_BAND_ID_1, TmiMarco.TMI_4)
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["功率频谱密度 STA band1", '%s' % dlt_t, result, remark])
+
+        self.log_display_record(remark)
+        self.log_display_record(" 测试结束, 结果: %s " % result)
+
+        self.auto_pbar_set(100)
+
+        # clear status
+        self.data_record_flag = 0
+        self.dut_switch_ser(PowerMarco.POWER_DOWN)
+        self.ftm_switch_ser(PowerMarco.POWER_DOWN)
+        self.sig_gen.close_signal_generator()
 
     # sta psd band2
     def sta_performance_psd_band2(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["功率频谱密度 STA band2", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch = '.\\LOG\\cert_log\\性能测试'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        self.filename_record = patch + '\\sta_功率频谱密度_band2_' + file_time + '.log'
+
+        # 获取开始时间
+        t_start = datetime.now()
+        result, remark = self.loopback_psd_handle('功率频谱密度 STA band2', BandIdMarco.PROTO_BAND_ID_2, TmiMarco.TMI_4)
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["功率频谱密度 STA band2", '%s' % dlt_t, result, remark])
+
+        self.log_display_record(remark)
+        self.log_display_record(" 测试结束, 结果: %s " % result)
+
+        self.auto_pbar_set(100)
+
+        # clear status
+        self.data_record_flag = 0
+        self.dut_switch_ser(PowerMarco.POWER_DOWN)
+        self.ftm_switch_ser(PowerMarco.POWER_DOWN)
+        self.sig_gen.close_signal_generator()
 
     # sta rate
     def sta_performance_rate(self):
@@ -1576,22 +1886,95 @@ class FtmAuto:
 
     # cco anti-ppm band1
     def cco_performance_anti_ppm_band1(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        # print(sys._getframe().f_code.co_name)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["抗频偏性能 CCO band1", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch = '.\\LOG\\cert_log\\性能测试'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        self.filename_record = patch + '\\cco_抗频偏性能_band1_' + file_time + '.log'
+
+        # 获取开始时间
+        t_start = datetime.now()
+
+        self.auto_test_entry_and_init('cco 抗频偏性能 band1', BandIdMarco.PROTO_BAND_ID_1)
+        # positive ppm test
+        positive_ppm_value, positive_result = self.auto_ppm_test(PpmMarco.PPM_POSITIVE)
+
+        remark = 'positive ppm test is :  %d ppm \n' % positive_ppm_value
+
+        self.auto_pbar_set(50)
+
+        # positive ppm test
+        nagative_ppm_value, nagative_result = self.auto_ppm_test(PpmMarco.PPM_POSITIVE)
+
+        remark += 'nagative ppm test is :  %d ppm \n' % nagative_ppm_value
+
+        if positive_result == 'pass' and nagative_result == 'pass':
+            result = 'pass'
+        else:
+            result = 'fail'
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["抗频偏性能 CCO band1", '%s' % dlt_t, result, remark])
+
+        self.log_display_record("抗频偏性能 CCO band1 抗频偏值为: %s " % remark)
+        self.log_display_record("测试结束, 结果: %s " % result)
+
+        self.auto_pbar_set(100)
+
+        # clear status
+        self.data_record_flag = 0
+        self.dut_switch_ser(PowerMarco.POWER_DOWN)
+        self.ftm_switch_ser(PowerMarco.POWER_DOWN)
+        self.sig_gen.close_signal_generator()
 
     # cco anti-ppm band2
     def cco_performance_anti_ppm_band2(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["抗频偏性能 CCO band2", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch = '.\\LOG\\cert_log\\性能测试'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        self.filename_record = patch + '\\cco_抗频偏性能_band2_' + file_time + '.log'
+
+        # 获取开始时间
+        t_start = datetime.now()
+
+        self.auto_test_entry_and_init('cco 抗频偏性能 band2', BandIdMarco.PROTO_BAND_ID_2)
+        # positive ppm test
+        positive_ppm_value, positive_result = self.auto_ppm_test(PpmMarco.PPM_POSITIVE)
+
+        remark = 'positive ppm test is :  %d ppm \n' % positive_ppm_value
+
+        self.auto_pbar_set(50)
+
+        # positive ppm test
+        nagative_ppm_value, nagative_result = self.auto_ppm_test(PpmMarco.PPM_POSITIVE)
+
+        remark += 'nagative ppm test is :  %d ppm \n' % nagative_ppm_value
+
+        if positive_result == 'pass' and nagative_result == 'pass':
+            result = 'pass'
+        else:
+            result = 'fail'
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["抗频偏性能 CCO band2", '%s' % dlt_t, result, remark])
+
+        self.log_display_record("抗频偏性能 CCO band2 抗频偏值为: %s " % remark)
+        self.log_display_record("测试结束, 结果: %s " % result)
+
+        self.auto_pbar_set(100)
+
+        # clear status
+        self.data_record_flag = 0
+        self.dut_switch_ser(PowerMarco.POWER_DOWN)
+        self.ftm_switch_ser(PowerMarco.POWER_DOWN)
+        self.sig_gen.close_signal_generator()
 
     # cco anti-attenuation band1
     def cco_performance_anti_att_band1(self):
@@ -1867,21 +2250,61 @@ class FtmAuto:
 
     # cco psd band1
     def cco_performance_psd_band1(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["功率频谱密度 CCO band1", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch = '.\\LOG\\cert_log\\性能测试'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        self.filename_record = patch + '\\cco_功率频谱密度_band1_' + file_time + '.log'
+
+        # 获取开始时间
+        t_start = datetime.now()
+        result, remark = self.loopback_psd_handle('功率频谱密度 CCO band1', BandIdMarco.PROTO_BAND_ID_1, TmiMarco.TMI_4)
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["功率频谱密度 CCO band1", '%s' % dlt_t, result, remark])
+
+        self.log_display_record(remark)
+        self.log_display_record(" 测试结束, 结果: %s " % result)
+
+        self.auto_pbar_set(100)
+
+        # clear status
+        self.data_record_flag = 0
+        self.dut_switch_ser(PowerMarco.POWER_DOWN)
+        self.ftm_switch_ser(PowerMarco.POWER_DOWN)
+        self.sig_gen.close_signal_generator()
 
     # cco psd band2
     def cco_performance_psd_band2(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["功率频谱密度 CCO band2", '%s' % dlt_t, "pass", "ok"])
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch = '.\\LOG\\cert_log\\性能测试'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        self.filename_record = patch + '\\cco_功率频谱密度_band2_' + file_time + '.log'
+
+        # 获取开始时间
+        t_start = datetime.now()
+        result, remark = self.loopback_psd_handle('功率频谱密度 CCO band2', BandIdMarco.PROTO_BAND_ID_2, TmiMarco.TMI_4)
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["功率频谱密度 CCO band2", '%s' % dlt_t, result, remark])
+
+        self.log_display_record(remark)
+        self.log_display_record(" 测试结束, 结果: %s " % result)
+
+        self.auto_pbar_set(100)
+
+        # clear status
+        self.data_record_flag = 0
+        self.dut_switch_ser(PowerMarco.POWER_DOWN)
+        self.ftm_switch_ser(PowerMarco.POWER_DOWN)
+        self.sig_gen.close_signal_generator()
 
     # cco rate
     def cco_performance_rate(self):
