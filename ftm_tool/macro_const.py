@@ -310,7 +310,7 @@ class PpmMarco:
     PPM_SMALL_STEP = 1
     # 30PPM
     PPM_THRESHOLD = 30
-    # positive and nagative frequency offset
+    # positive and negative frequency offset
     PPM_POSITIVE = 1
-    PPM_NAGATIVE = -1
+    PPM_NEGATIVE = -1
 

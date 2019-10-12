@@ -600,6 +600,7 @@ class FtmAuto:
         time.sleep(5)
 
         str_ftm = "初始化台体"
+        self.sig_gen.sg_set_ppm(0)
         self.log_display_record(str_ftm)
         # proto = sg, band = 2
         self.auto_init_ftm(ProtoMarco.PROTO_SG, BandIdMarco.PROTO_BAND_ID_2)
@@ -1284,11 +1285,11 @@ class FtmAuto:
         self.auto_pbar_set(50)
 
         # positive ppm test
-        nagative_ppm_value, nagative_result = self.auto_ppm_test(PpmMarco.PPM_NAGATIVE)
+        negative_ppm_value, negative_result = self.auto_ppm_test(PpmMarco.PPM_NEGATIVE)
 
-        remark += 'nagative ppm test is :  %d ppm \n' % nagative_ppm_value
+        remark += 'negative ppm test is :  %d ppm \n' % negative_ppm_value
 
-        if positive_result == 'pass' and nagative_result == 'pass':
+        if positive_result == 'pass' and negative_result == 'pass':
             result = 'pass'
         else:
             result = 'fail'
@@ -1330,11 +1331,11 @@ class FtmAuto:
         self.auto_pbar_set(50)
 
         # positive ppm test
-        nagative_ppm_value, nagative_result = self.auto_ppm_test(PpmMarco.PPM_POSITIVE)
+        negative_ppm_value, negative_result = self.auto_ppm_test(PpmMarco.PPM_NEGATIVE)
 
-        remark += 'nagative ppm test is :  %d ppm \n' % nagative_ppm_value
+        remark += 'negative ppm test is :  %d ppm \n' % negative_ppm_value
 
-        if positive_result == 'pass' and nagative_result == 'pass':
+        if positive_result == 'pass' and negative_result == 'pass':
             result = 'pass'
         else:
             result = 'fail'
@@ -1654,6 +1655,7 @@ class FtmAuto:
         time.sleep(5)
 
         str_ftm = "初始化台体"
+        self.sig_gen.sg_set_ppm(0)
         self.log_display_record(str_ftm)
         # proto = sg, band = 2
         self.auto_init_ftm(ProtoMarco.PROTO_SG, BandIdMarco.PROTO_BAND_ID_2)
@@ -1905,11 +1907,11 @@ class FtmAuto:
         self.auto_pbar_set(50)
 
         # positive ppm test
-        nagative_ppm_value, nagative_result = self.auto_ppm_test(PpmMarco.PPM_POSITIVE)
+        negative_ppm_value, negative_result = self.auto_ppm_test(PpmMarco.PPM_NEGATIVE)
 
-        remark += 'nagative ppm test is :  %d ppm \n' % nagative_ppm_value
+        remark += 'negative ppm test is :  %d ppm \n' % negative_ppm_value
 
-        if positive_result == 'pass' and nagative_result == 'pass':
+        if positive_result == 'pass' and negative_result == 'pass':
             result = 'pass'
         else:
             result = 'fail'
@@ -1951,11 +1953,11 @@ class FtmAuto:
         self.auto_pbar_set(50)
 
         # positive ppm test
-        nagative_ppm_value, nagative_result = self.auto_ppm_test(PpmMarco.PPM_POSITIVE)
+        negative_ppm_value, negative_result = self.auto_ppm_test(PpmMarco.PPM_NEGATIVE)
 
-        remark += 'nagative ppm test is :  %d ppm \n' % nagative_ppm_value
+        remark += 'negative ppm test is :  %d ppm \n' % negative_ppm_value
 
-        if positive_result == 'pass' and nagative_result == 'pass':
+        if positive_result == 'pass' and negative_result == 'pass':
             result = 'pass'
         else:
             result = 'fail'

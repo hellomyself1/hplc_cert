@@ -1,26 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="c97c0122-51a3-426c-ac6f-5199f6ea3606" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/hplc_cert/Analysis-00.toc" beforeDir="false" afterPath="$PROJECT_DIR$/build/hplc_cert/Analysis-00.toc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/hplc_cert/EXE-00.toc" beforeDir="false" afterPath="$PROJECT_DIR$/build/hplc_cert/EXE-00.toc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/hplc_cert/PKG-00.pkg" beforeDir="false" afterPath="$PROJECT_DIR$/build/hplc_cert/PKG-00.pkg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/hplc_cert/PKG-00.toc" beforeDir="false" afterPath="$PROJECT_DIR$/build/hplc_cert/PKG-00.toc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/hplc_cert/PYZ-00.pyz" beforeDir="false" afterPath="$PROJECT_DIR$/build/hplc_cert/PYZ-00.pyz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/hplc_cert/PYZ-00.toc" beforeDir="false" afterPath="$PROJECT_DIR$/build/hplc_cert/PYZ-00.toc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/hplc_cert/base_library.zip" beforeDir="false" afterPath="$PROJECT_DIR$/build/hplc_cert/base_library.zip" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/hplc_cert/warn-hplc_cert.txt" beforeDir="false" afterPath="$PROJECT_DIR$/build/hplc_cert/warn-hplc_cert.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/hplc_cert/xref-hplc_cert.html" beforeDir="false" afterPath="$PROJECT_DIR$/build/hplc_cert/xref-hplc_cert.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/hplc_cert.exe" beforeDir="false" afterPath="$PROJECT_DIR$/dist/hplc_cert.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/excel.py" beforeDir="false" afterPath="$PROJECT_DIR$/excel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ftm_auto.py" beforeDir="false" afterPath="$PROJECT_DIR$/ftm_auto.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ftm_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/ftm_cmd.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hplc_cert.py" beforeDir="false" afterPath="$PROJECT_DIR$/hplc_cert.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/macro_const.py" beforeDir="false" afterPath="$PROJECT_DIR$/macro_const.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/signal_generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/signal_generator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui2.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui2.py" afterDir="false" />
-    </list>
+    <list default="true" id="c97c0122-51a3-426c-ac6f-5199f6ea3606" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,11 +19,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/macro_const.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="20">
-              <caret line="272" column="21" lean-forward="true" selection-start-line="272" selection-start-column="21" selection-end-line="272" selection-end-column="21" />
+            <state relative-caret-position="21">
+              <caret line="272" column="21" selection-start-line="272" selection-start-column="21" selection-end-line="272" selection-end-column="21" />
             </state>
           </provider>
         </entry>
@@ -50,13 +31,13 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/signal_generator.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="336">
+            <state relative-caret-position="5510">
               <caret line="294" column="46" selection-start-line="294" selection-start-column="46" selection-end-line="294" selection-end-column="46" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/hplc_cert.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="641">
@@ -80,7 +61,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ftm_auto.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="198">
+            <state relative-caret-position="22553">
               <caret line="1204" column="44" selection-start-line="1204" selection-start-column="44" selection-end-line="1204" selection-end-column="44" />
               <folding>
                 <element signature="e#25#37#0" expanded="true" />
@@ -483,14 +464,16 @@
       <workItem from="1570620978423" duration="1689000" />
       <workItem from="1570689510397" duration="9574000" />
       <workItem from="1570783802039" duration="5095000" />
+      <workItem from="1570860773632" duration="61000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="494085000" />
+    <option name="totallyTimeSpent" value="494146000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1912" y="-8" width="2576" height="1416" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1515625" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -777,10 +760,51 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/../../../py_test/test3/venv/Lib/site-packages/PIL/ImageChops.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="445">
+          <caret line="93" lean-forward="true" selection-start-line="93" selection-end-line="93" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../py_test/test2/picture.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="399">
+          <caret line="33" column="7" lean-forward="true" selection-start-line="33" selection-start-column="7" selection-end-line="33" selection-end-column="7" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/macro_const.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="21">
+          <caret line="272" column="21" selection-start-line="272" selection-start-column="21" selection-end-line="272" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/signal_generator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5510">
+          <caret line="294" column="46" selection-start-line="294" selection-start-column="46" selection-end-line="294" selection-end-column="46" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/config/cert_config.ini">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="266">
           <caret line="14" column="6" selection-start-line="14" selection-start-column="6" selection-end-line="14" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ftm_auto.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="22553">
+          <caret line="1204" column="44" selection-start-line="1204" selection-start-column="44" selection-end-line="1204" selection-end-column="44" />
+          <folding>
+            <element signature="e#25#37#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -812,47 +836,6 @@
           <folding>
             <element signature="e#25#35#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/signal_generator.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="294" column="46" selection-start-line="294" selection-start-column="46" selection-end-line="294" selection-end-column="46" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ftm_auto.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="198">
-          <caret line="1204" column="44" selection-start-line="1204" selection-start-column="44" selection-end-line="1204" selection-end-column="44" />
-          <folding>
-            <element signature="e#25#37#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../../py_test/test3/venv/Lib/site-packages/PIL/ImageChops.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="445">
-          <caret line="93" lean-forward="true" selection-start-line="93" selection-end-line="93" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../../py_test/test2/picture.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="399">
-          <caret line="33" column="7" lean-forward="true" selection-start-line="33" selection-start-column="7" selection-end-line="33" selection-end-column="7" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/macro_const.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="20">
-          <caret line="272" column="21" lean-forward="true" selection-start-line="272" selection-start-column="21" selection-end-line="272" selection-end-column="21" />
         </state>
       </provider>
     </entry>
