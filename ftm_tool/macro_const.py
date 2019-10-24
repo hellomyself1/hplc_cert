@@ -299,7 +299,7 @@ class ResultMarco:
 
 class OtherMarco:
     ATT_TEST_TIMES = 40
-    PPM_TEST_TIMES = 10
+    PPM_TEST_TIMES = 40
 
 
 class PpmMarco:

@@ -209,7 +209,7 @@ class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
         # att control serial port open
         self.fa.sig_gen.att_control_ser_open()
         # open signal generator
-        self.fa.sig_gen.open_signal_generator()
+        # self.fa.sig_gen.open_signal_generator()
 
     # close serial
     def port_close(self):
@@ -293,17 +293,19 @@ class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
 
     # some_test
     def some_test_func(self):
-        '''
+        """
         self.excel = excel.ExcelTool()
         self.excel.excel_init()
         list = ["TMI遍历 STA band3", 'PASS', 'great']
         self.excel.excel_write(list)
-        '''
-        self.fa.sig_gen.sg_set_ppm(300)
+        """
+        # dut power on serial port open
+        self.dut_power_on_serial_port_open()
+        # self.fa.sig_gen.sg_set_ppm(300)
         # self.dut_switch_send_cmd('A0 01 01 A2')
-        # self.timer = QTimer(self)  # init timer
-        # self.timer.timeout.connect(self.fa.test_case)
-        # self.timer.start(30*1000)  # start timer
+        self.timer = QTimer(self)  # init timer
+        self.timer.timeout.connect(self.fa.test_case)
+        self.timer.start(31*1000)  # start timer
 
     # read file test
     def readfile_test(self):

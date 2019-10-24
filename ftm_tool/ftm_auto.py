@@ -911,6 +911,8 @@ class FtmAuto:
         self.auto_ftm_entry_mode(ProtoMarco.PROTO_SG, ModeMarco.CERT_TEST_CMD_ENTER_PHY_T)
         # time.sleep(3)
         self.log_display_record(" 发送进入透传模式的包结束  开始发送测试包")
+        self.auto_ftm_tx_beacon()
+        self.auto_ftm_tx_beacon()
 
         # time.sleep(10)
         # self.dut_switch_ser(PowerMarco.POWER_DOWN)
@@ -1194,7 +1196,8 @@ class FtmAuto:
         self.sig_gen.sg_set_ppm(ppm_value)
         self.auto_ftm_tx_beacon()
         judge_flag = 1
-        ppm_step = (PpmMarco.PPM_LARGE_STEP * p_n_ppm)
+        # ppm_step = (PpmMarco.PPM_LARGE_STEP * p_n_ppm)
+        ppm_step = (PpmMarco.PPM_MIDDLE_STEP * p_n_ppm)
         while judge_flag:
             ppm_value += ppm_step
             self.sig_gen.sg_set_ppm(ppm_value)
@@ -1237,11 +1240,12 @@ class FtmAuto:
             compare_rate = (compare_cnt * 100) / OtherMarco.PPM_TEST_TIMES
             self.log_display_record("频偏值为: %d 的时候, 成功率为: %d" % (ppm_value, compare_rate))
             if compare_rate < 90:
-                if ppm_step == (PpmMarco.PPM_LARGE_STEP * p_n_ppm):
-                    ppm_value -= ppm_step
-                    ppm_step = (PpmMarco.PPM_MIDDLE_STEP * p_n_ppm)
-                    ppm_value -= ppm_step
-                elif ppm_step == (PpmMarco.PPM_MIDDLE_STEP * p_n_ppm):
+                # if ppm_step == (PpmMarco.PPM_LARGE_STEP * p_n_ppm):
+                #    ppm_value -= ppm_step
+                #    ppm_step = (PpmMarco.PPM_MIDDLE_STEP * p_n_ppm)
+                #    ppm_value -= ppm_step
+                # elif ppm_step == (PpmMarco.PPM_MIDDLE_STEP * p_n_ppm):
+                if ppm_step == (PpmMarco.PPM_MIDDLE_STEP * p_n_ppm):
                     ppm_value -= ppm_step
                     ppm_step = (PpmMarco.PPM_SMALL_STEP * p_n_ppm)
                     ppm_value -= ppm_step
@@ -1283,7 +1287,10 @@ class FtmAuto:
         remark = 'positive ppm test is :  %d ppm \n' % positive_ppm_value
 
         self.auto_pbar_set(50)
+        self.dut_switch_ser(PowerMarco.POWER_DOWN)
+        self.ftm_switch_ser(PowerMarco.POWER_DOWN)
 
+        self.auto_test_entry_and_init('sta 抗频偏性能 band1', BandIdMarco.PROTO_BAND_ID_1)
         # positive ppm test
         negative_ppm_value, negative_result = self.auto_ppm_test(PpmMarco.PPM_NEGATIVE)
 
@@ -1431,6 +1438,7 @@ class FtmAuto:
         self.sig_gen.close_signal_generator()
 
     def test_case(self):
+        """"
         # self.auto_pbar_set(0)
         file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
         patch = '.\\LOG\\cert_log\\性能测试'
@@ -1440,6 +1448,14 @@ class FtmAuto:
         self.filename_record = patch + '\\sta_抗衰减_band2_' + file_time + '.log'
 
         self.overnight_test('sta 抗衰减 band2', BandIdMarco.PROTO_BAND_ID_2)
+
+        """
+
+        self.dut_switch_ser('A0 01 01 A2')
+
+        time.sleep(30)
+
+        self.dut_switch_ser('A0 01 00 A1')
 
     # sta anti-narrowband band1
     def sta_performance_anti_narrow_band1(self):
@@ -1642,7 +1658,7 @@ class FtmAuto:
         self.ftm_switch_ser(PowerMarco.POWER_DOWN)
         self.sig_gen.close_signal_generator()
 
-    def loopback_psd_handle(self, str_title, band_id, tmi):
+    def loopback_psd_mask_handle(self, str_title, band_id, tmi, mask_id=0, test_times=100):
         # start run
         str_ftm = "开始测试 " + str_title
         self.log_display_record(str_ftm)
@@ -1700,7 +1716,7 @@ class FtmAuto:
         self.auto_ftm_tx_beacon()
 
         compare_flag = 0
-        for times in range(100):
+        for times in range(test_times):
             test_cnt += 1
             if compare_flag == 0 and test_cnt >= 10:
                 break
@@ -1758,7 +1774,7 @@ class FtmAuto:
 
         # 获取开始时间
         t_start = datetime.now()
-        result, remark = self.loopback_psd_handle('功率频谱密度 STA band1', BandIdMarco.PROTO_BAND_ID_1, TmiMarco.TMI_4)
+        result, remark = self.loopback_psd_mask_handle('功率频谱密度 STA band1', BandIdMarco.PROTO_BAND_ID_1, TmiMarco.TMI_4)
 
         # 获取结束时间
         t_end = datetime.now()
@@ -1787,7 +1803,7 @@ class FtmAuto:
 
         # 获取开始时间
         t_start = datetime.now()
-        result, remark = self.loopback_psd_handle('功率频谱密度 STA band2', BandIdMarco.PROTO_BAND_ID_2, TmiMarco.TMI_4)
+        result, remark = self.loopback_psd_mask_handle('功率频谱密度 STA band2', BandIdMarco.PROTO_BAND_ID_2, TmiMarco.TMI_4)
 
         # 获取结束时间
         t_end = datetime.now()
@@ -2261,7 +2277,7 @@ class FtmAuto:
 
         # 获取开始时间
         t_start = datetime.now()
-        result, remark = self.loopback_psd_handle('功率频谱密度 CCO band1', BandIdMarco.PROTO_BAND_ID_1, TmiMarco.TMI_4)
+        result, remark = self.loopback_psd_mask_handle('功率频谱密度 CCO band1', BandIdMarco.PROTO_BAND_ID_1, TmiMarco.TMI_4)
 
         # 获取结束时间
         t_end = datetime.now()
@@ -2290,7 +2306,7 @@ class FtmAuto:
 
         # 获取开始时间
         t_start = datetime.now()
-        result, remark = self.loopback_psd_handle('功率频谱密度 CCO band2', BandIdMarco.PROTO_BAND_ID_2, TmiMarco.TMI_4)
+        result, remark = self.loopback_psd_mask_handle('功率频谱密度 CCO band2', BandIdMarco.PROTO_BAND_ID_2, TmiMarco.TMI_4)
 
         # 获取结束时间
         t_end = datetime.now()
