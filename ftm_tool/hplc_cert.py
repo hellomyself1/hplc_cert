@@ -362,6 +362,7 @@ class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
             print(config.get("tt_config", "s2_serial_port"))
 
     def test_start(self):
+        self.pushButton_start.setEnabled(False)
         self.textBrowser.setText('')
         self.tree.tw.table_statistics()
 

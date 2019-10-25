@@ -12,11 +12,7 @@
       <change beforePath="$PROJECT_DIR$/build/hplc_cert/base_library.zip" beforeDir="false" afterPath="$PROJECT_DIR$/build/hplc_cert/base_library.zip" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/hplc_cert/warn-hplc_cert.txt" beforeDir="false" afterPath="$PROJECT_DIR$/build/hplc_cert/warn-hplc_cert.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dist/hplc_cert.exe" beforeDir="false" afterPath="$PROJECT_DIR$/dist/hplc_cert.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ftm_auto.py" beforeDir="false" afterPath="$PROJECT_DIR$/ftm_auto.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ftm_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/ftm_cmd.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/hplc_cert.py" beforeDir="false" afterPath="$PROJECT_DIR$/hplc_cert.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui_hplc.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui_hplc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui_hplc.ui" beforeDir="false" afterPath="$PROJECT_DIR$/ui_hplc.ui" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -53,8 +49,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/hplc_cert.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="71">
-              <caret line="212" column="47" lean-forward="true" selection-start-line="212" selection-start-column="47" selection-end-line="212" selection-end-column="47" />
+            <state relative-caret-position="242">
+              <caret line="224" column="46" selection-start-line="224" selection-start-column="46" selection-end-line="224" selection-end-column="46" />
               <folding>
                 <element signature="e#25#35#0" expanded="true" />
               </folding>
@@ -537,12 +533,12 @@
       <workItem from="1571187259034" duration="18192000" />
       <workItem from="1571456465180" duration="4359000" />
       <workItem from="1571626810547" duration="27039000" />
-      <workItem from="1571903387313" duration="17617000" />
+      <workItem from="1571903387313" duration="18789000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="574123000" />
+    <option name="totallyTimeSpent" value="575295000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -996,8 +992,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/hplc_cert.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="71">
-          <caret line="212" column="47" lean-forward="true" selection-start-line="212" selection-start-column="47" selection-end-line="212" selection-end-column="47" />
+        <state relative-caret-position="242">
+          <caret line="224" column="46" selection-start-line="224" selection-start-column="46" selection-end-line="224" selection-end-column="46" />
           <folding>
             <element signature="e#25#35#0" expanded="true" />
           </folding>
