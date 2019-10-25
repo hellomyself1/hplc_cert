@@ -356,13 +356,13 @@ class FtmAuto:
         return self.error_type
 
     # entry phy lp mode
-    def auto_ftm_tx_test_pkt(self, tmi, extmi=0):
-        self.auto_tx_data("load pkt_cfg_cert -d 1" + ' -t %d' % tmi + ' -et %d' % extmi)
+    def auto_ftm_tx_test_pkt(self, tmi, extmi=0, nid=0):
+        self.auto_tx_data("load pkt_cfg_cert -d 1" + ' -n %d' % nid + ' -t %d' % tmi + ' -et %d' % extmi)
         self.auto_tx_data("load pkt_data_cert_test")
         self.auto_tx_data("load test_case -n 1 -i 100")
 
     def auto_ftm_tx_beacon(self):
-        self.auto_tx_data("load pkt_cfg_cert -d 0")
+        self.auto_tx_data("load pkt_cfg_cert -d 0 -n 3")
         self.auto_tx_data("load test_case -n 5 -i 500")
         time.sleep(3)
 
@@ -487,15 +487,35 @@ class FtmAuto:
                 if i - compare_cnt > 10:
                     break
                 # get fc
-                self.auto_ftm_tx_test_pkt(TmiMarco.TMI_4)
+                self.auto_ftm_tx_test_pkt(TmiMarco.TMI_4, nid=3)
                 time.sleep(0.5)
-                self.pack_compare = self.auto_ftm_get_fc_info()
+
+                # 获取10次fc，如果有一次fc获取成功就继续，如果10次都没有成功，就直接退出，报台体错误
+                for i in range(10):
+                    # pre-send pkt and get fc
+                    self.auto_ftm_tx_test_pkt(TmiMarco.TMI_4, nid=3)
+                    # delay 0.5s and get correct fc
+                    time.sleep(0.5)
+                    # noinspection PyBroadException
+                    try:
+                        # get config fc
+                        self.pack_compare = self.auto_ftm_get_fc_info()
+                        break
+                    except Exception:
+                        self.pack_compare = b''
+
+                if self.pack_compare == b'':
+                    str_err = 'loopback测试中，台体连续10次获取fc错误！！！'
+                    self.log_display_record(str_err)
+                    result = 'fail'
+                    remark = str_err
+                    return [result, remark]
 
                 self.compare_queue.queue.clear()
 
                 self.g_tmi = TmiMarco.TMI_4
                 self.g_extmi = 0
-                self.auto_ftm_tx_test_pkt(TmiMarco.TMI_4)
+                self.auto_ftm_tx_test_pkt(TmiMarco.TMI_4, nid=3)
                 # noinspection PyBroadException
                 try:
                     str_info = self.compare_queue.get(timeout=5)
@@ -549,7 +569,7 @@ class FtmAuto:
                     if i - compare_cnt > 10:
                         break
                     # get fc
-                    self.auto_ftm_tx_test_pkt(TmiMarco.TMI_4)
+                    self.auto_ftm_tx_test_pkt(TmiMarco.TMI_4, nid=3)
                     time.sleep(0.5)
                     self.pack_compare = self.auto_ftm_get_fc_info()
 
@@ -557,7 +577,7 @@ class FtmAuto:
 
                     self.g_tmi = TmiMarco.TMI_4
                     self.g_extmi = 0
-                    self.auto_ftm_tx_test_pkt(TmiMarco.TMI_4)
+                    self.auto_ftm_tx_test_pkt(TmiMarco.TMI_4, nid=3)
                     # noinspection PyBroadException
                     try:
                         str_info = self.compare_queue.get(timeout=2)
@@ -660,18 +680,32 @@ class FtmAuto:
                     break
                 elif times == 19:
                     break
-                # pre-send pkt and get fc
-                self.auto_ftm_tx_test_pkt(tmi)
-                # delay 0.5s and get correct fc
-                time.sleep(0.5)
-                # get config fc
-                self.pack_compare = self.auto_ftm_get_fc_info()
+                # 获取10次fc，如果有一次fc获取成功就继续，如果10次都没有成功，就直接退出，报台体错误
+                for i in range(10):
+                    # pre-send pkt and get fc
+                    self.auto_ftm_tx_test_pkt(tmi, nid=3)
+                    # delay 0.5s and get correct fc
+                    time.sleep(0.5)
+                    # noinspection PyBroadException
+                    try:
+                        # get config fc
+                        self.pack_compare = self.auto_ftm_get_fc_info()
+                        break
+                    except Exception:
+                        self.pack_compare = b''
+
+                if self.pack_compare == b'':
+                    str_err = 'loopback测试中，台体连续10次获取fc错误！！！'
+                    self.log_display_record(str_err)
+                    result = 'fail'
+                    remark = str_err
+                    return [result, remark]
 
                 self.compare_queue.queue.clear()
                 self.data_record_flag = 1
                 self.g_tmi = tmi
                 self.g_extmi = 0
-                self.auto_ftm_tx_test_pkt(tmi)
+                self.auto_ftm_tx_test_pkt(tmi, nid=3)
                 # noinspection PyBroadException
                 try:
                     str_info = self.compare_queue.get(timeout=2)
@@ -707,7 +741,7 @@ class FtmAuto:
                         elif times == 19:
                             break
                         # pre-send pkt and get fc
-                        self.auto_ftm_tx_test_pkt(TmiMarco.TMI_MAX, extmi)
+                        self.auto_ftm_tx_test_pkt(TmiMarco.TMI_MAX, extmi, nid=3)
                         # delay 0.5s and get correct fc
                         time.sleep(0.5)
                         # get config fc
@@ -717,7 +751,7 @@ class FtmAuto:
                         self.data_record_flag = 1
                         self.g_tmi = TmiMarco.TMI_MAX
                         self.g_extmi = extmi
-                        self.auto_ftm_tx_test_pkt(TmiMarco.TMI_MAX, extmi)
+                        self.auto_ftm_tx_test_pkt(TmiMarco.TMI_MAX, extmi, nid=3)
 
                         # noinspection PyBroadException
                         try:
@@ -1211,7 +1245,7 @@ class FtmAuto:
                 if i - compare_cnt > 10:
                     break
                 # get fc
-                self.auto_ftm_tx_test_pkt(TmiMarco.TMI_4)
+                self.auto_ftm_tx_test_pkt(TmiMarco.TMI_4, nid=3)
                 time.sleep(0.5)
                 self.pack_compare = self.auto_ftm_get_fc_info()
 
@@ -1220,7 +1254,7 @@ class FtmAuto:
 
                 self.g_tmi = TmiMarco.TMI_4
                 self.g_extmi = 0
-                self.auto_ftm_tx_test_pkt(TmiMarco.TMI_4)
+                self.auto_ftm_tx_test_pkt(TmiMarco.TMI_4, nid=3)
                 # noinspection PyBroadException
                 try:
                     str_info = self.compare_queue.get(timeout=5)
@@ -1721,17 +1755,36 @@ class FtmAuto:
             if compare_flag == 0 and test_cnt >= 10:
                 break
             # pre-send pkt and get fc
-            self.auto_ftm_tx_test_pkt(tmi)
+            self.auto_ftm_tx_test_pkt(tmi, nid=3)
             # delay 0.5s and get correct fc
             time.sleep(0.5)
-            # get config fc
-            self.pack_compare = self.auto_ftm_get_fc_info()
+
+            # 获取10次fc，如果有一次fc获取成功就继续，如果10次都没有成功，就直接退出，报台体错误
+            for i in range(10):
+                # pre-send pkt and get fc
+                self.auto_ftm_tx_test_pkt(tmi, nid=3)
+                # delay 0.5s and get correct fc
+                time.sleep(0.5)
+                # noinspection PyBroadException
+                try:
+                    # get config fc
+                    self.pack_compare = self.auto_ftm_get_fc_info()
+                    break
+                except Exception:
+                    self.pack_compare = b''
+
+            if self.pack_compare == b'':
+                str_err = 'loopback测试中，台体连续10次获取fc错误！！！'
+                self.log_display_record(str_err)
+                result = 'fail'
+                remark = str_err
+                return [result, remark]
 
             self.compare_queue.queue.clear()
             self.data_record_flag = 1
             self.g_tmi = tmi
             self.g_extmi = 0
-            self.auto_ftm_tx_test_pkt(tmi)
+            self.auto_ftm_tx_test_pkt(tmi, nid=3)
             # noinspection PyBroadException
             try:
                 str_info = self.compare_queue.get(timeout=2)

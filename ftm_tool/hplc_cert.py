@@ -17,7 +17,7 @@ import ftm_auto
 from datetime import *
 import time
 import logging
-import excel
+# import excel
 from macro_const import DebugLeave
 
 
@@ -209,7 +209,7 @@ class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
         # att control serial port open
         self.fa.sig_gen.att_control_ser_open()
         # open signal generator
-        # self.fa.sig_gen.open_signal_generator()
+        self.fa.sig_gen.open_signal_generator()
 
     # close serial
     def port_close(self):
