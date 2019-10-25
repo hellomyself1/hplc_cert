@@ -227,15 +227,18 @@ class FtmTool:
 
         self.msg_info_cmd = ''
         self.ser_send_data = None
+        self.c_thread = None
+        self.f_thread = None
 
-    def start_thread(self, serport):
+    def start_ft_thread(self, serport):
+        print("start ft thread")
         # start threads for serial port data collection
         self.c_thread = threading.Thread(target=self.raw_data_commands_parsing)
-        self.c_thread.setDaemon(True)
+        # self.c_thread.setDaemon(True)
         self.c_thread.start()
 
         self.f_thread = threading.Thread(target=self.collect_info_from_ser, args=(serport,))
-        self.f_thread.setDaemon(True)
+        # self.f_thread.setDaemon(True)
         self.f_thread.start()
 
     def ftm_tx_data_fun(self, ser_tx_func):
@@ -738,7 +741,7 @@ class FtmTool:
             return ret
 
     # kill child thread
-    def _async_raise(self, tid, exctype):
+    def _async_raise_ft(self, tid, exctype):
         """raises the exception, performs cleanup if needed"""
         tid = ctypes.c_long(tid)
         if not inspect.isclass(exctype):
@@ -753,6 +756,6 @@ class FtmTool:
             raise SystemError("PyThreadState_SetAsyncExc failed")
 
     # kill child thread
-    def stop_thread(self):
-        self._async_raise(self.c_thread.ident, SystemExit)
-        self._async_raise(self.f_thread.ident, SystemExit)
+    def stop_ft_thread(self):
+        self._async_raise_ft(self.c_thread.ident, SystemExit)
+        self._async_raise_ft(self.f_thread.ident, SystemExit)

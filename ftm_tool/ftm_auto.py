@@ -39,7 +39,7 @@ class FtmAuto:
         # loopback serial port
         self.lp_ser = serial.Serial()
         self.lp_c_thread = None
-
+        self.fun_thread = None
         # rx data thread
         self.compare_queue = queue.Queue(maxsize=-1)
 
@@ -56,9 +56,6 @@ class FtmAuto:
         # 进度条
         self.pbar_emit = pbar_emit
 
-        self.fun_thread = threading.Thread(target=self.auto_handle_func)
-        self.fun_thread.setDaemon(True)
-        self.fun_thread.start()
         self.sig_gen = signal_generator.SignalGenerator(self.record_log)
         self.att_control_ser = self.sig_gen.att_control_ser
         self.overnight_cnt = 0
@@ -109,9 +106,10 @@ class FtmAuto:
             return None
 
     def start_tt_thread(self):
+        print("start tt thread!")
         # start threads for serial port data collection
         self.tt_c_thread = threading.Thread(target=self.tt_data_handle)
-        self.tt_c_thread.setDaemon(True)
+        # self.tt_c_thread.setDaemon(True)
         self.tt_c_thread.start()
 
     def lp_ser_open(self):
@@ -150,10 +148,17 @@ class FtmAuto:
             return None
 
     def start_lp_thread(self):
+        print("start lp thread!")
         # start threads for serial port data collection
         self.lp_c_thread = threading.Thread(target=self.lp_data_handle)
-        self.lp_c_thread.setDaemon(True)
+        # self.lp_c_thread.setDaemon(True)
         self.lp_c_thread.start()
+
+    def start_fun_thread(self):
+        print("start fun thread!")
+        self.fun_thread = threading.Thread(target=self.auto_handle_func)
+        # self.fun_thread.setDaemon(True)
+        self.fun_thread.start()
 
     # kill child thread
     @staticmethod
@@ -173,8 +178,12 @@ class FtmAuto:
 
     # kill child thread
     def stop_thread(self):
+        print("stop fa thread!")
         self._async_raise(self.tt_c_thread.ident, SystemExit)
         self._async_raise(self.lp_c_thread.ident, SystemExit)
+        self._async_raise(self.fun_thread.ident, SystemExit)
+        # stop lcd timer
+        self.timer_flag = 1
 
     def tt_data_handle(self):
         num = 0

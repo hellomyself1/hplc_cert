@@ -54,9 +54,9 @@
   <widget class="QPushButton" name="pushButton_start">
    <property name="geometry">
     <rect>
-     <x>30</x>
+     <x>20</x>
      <y>40</y>
-     <width>111</width>
+     <width>291</width>
      <height>31</height>
     </rect>
    </property>
@@ -135,19 +135,6 @@
     </rect>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_stop">
-   <property name="geometry">
-    <rect>
-     <x>160</x>
-     <y>40</y>
-     <width>111</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Stop</string>
-   </property>
-  </widget>
   <zorder>smoe_test</zorder>
   <zorder>tableWidget</zorder>
   <zorder>treeWidget</zorder>
@@ -157,7 +144,6 @@
   <zorder>textBrowser</zorder>
   <zorder>pbar</zorder>
   <zorder>lcdNumber</zorder>
-  <zorder>pushButton_stop</zorder>
  </widget>
  <resources/>
  <connections/>

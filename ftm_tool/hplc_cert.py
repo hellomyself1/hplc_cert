@@ -59,7 +59,6 @@ class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
         self.smoe_test.clicked.connect(self.some_test_func)
 
         self.pushButton_start.clicked.connect(self.test_start)
-        self.pushButton_stop.clicked.connect(self.test_stop)
 
         # connect function
         # pbar
@@ -75,6 +74,10 @@ class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
             self.config.read(config_file, encoding="utf-8")
         except Exception:
             print("file open fail")
+
+        self.open_button.setEnabled(True)
+        self.close_button.setEnabled(False)
+        self.pushButton_start.setEnabled(False)
 
     def signal_pbar_emit(self, value):
         self.signal_pbar.emit(value)
@@ -133,12 +136,9 @@ class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
         if self.ser.isOpen():
             self.record_log(DebugLeave.LOG_DEBUG, "cli serial open successed")
             # open rx thread
-            self.ft.start_thread(self.ser)
+            # self.ft.start_thread(self.ser)
             # set tx data callback
             self.ft.ftm_tx_data_fun(self.data_send_cmd)
-
-            self.open_button.setEnabled(False)
-            self.close_button.setEnabled(True)
 
     def dut_power_on_serial_port_open(self):
         if self.config.has_option("dut_switch_config", "s3_serial_port"):
@@ -196,6 +196,7 @@ class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
 
     # open serial
     def port_open(self):
+        print("open port")
         # cli serial port open
         self.cli_serial_port_open()
         # dut power on serial port open
@@ -211,22 +212,60 @@ class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
         # open signal generator
         self.fa.sig_gen.open_signal_generator()
 
+        if self.ser.is_open is True and self.dut_switch_ser.is_open is True \
+                and self.ftm_switch_ser.is_open is True and self.fa.tt_ser.is_open is True \
+                and self.fa.att_control_ser.is_open is True:
+
+            # start ft thread
+            self.ft.start_ft_thread(self.ser)
+
+            # start fun thread
+            self.fa.start_fun_thread()
+
+            self.open_button.setEnabled(False)
+            self.close_button.setEnabled(True)
+            self.pushButton_start.setEnabled(True)
+        else:
+            self.port_close()
+
     # close serial
     def port_close(self):
+        print("colse all poart**************************************")
         # noinspection PyBroadException
         try:
-            self.ft.stop_thread()
+            # 先关闭线程，再关serial，不然会出错
+            self.ft.stop_ft_thread()
+            self.ft.response_queue.queue.clear()
+            self.ft.notice_queue.queue.clear()
             self.fa.stop_thread()
+            self.tree.tw.handle_queue.queue.clear()
+            self.fa.fun_queue.queue.clear()
+            # 先关掉开关，再关serial
+            self.fa.auto_close()
+            # 关掉serial
             self.ser.close()
             self.dut_switch_ser.close()
             self.ftm_switch_ser.close()
             self.fa.tt_ser.close()
+            self.fa.lp_ser.close()
             self.fa.att_control_ser.close()
+            # 关掉信号发生器
+            self.fa.sig_gen.close_signal_generator()
+
+            print("stop thread!!")
+
+            if self.ser.is_open is False and self.dut_switch_ser.is_open is False \
+                    and self.ftm_switch_ser.is_open is False and self.fa.tt_ser.is_open is False \
+                    and self.fa.att_control_ser.is_open is False:
+                print("all seral closed!!")
+                self.open_button.setEnabled(True)
+                self.close_button.setEnabled(False)
+                self.pushButton_start.setEnabled(False)
+
         except Exception:
+            print("close seral error!!")
             self.record_log(DebugLeave.LOG_ERROR, "关闭串口出错！")
             pass
-        self.open_button.setEnabled(True)
-        self.close_button.setEnabled(False)
 
     # dut power on/down cmd
     def dut_switch_send_cmd(self, str_cmd):
@@ -323,11 +362,8 @@ class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
             print(config.get("tt_config", "s2_serial_port"))
 
     def test_start(self):
+        self.textBrowser.setText('')
         self.tree.tw.table_statistics()
-
-    def test_stop(self):
-        self.fa.sig_gen.close_signal_generator()
-        self.fa.auto_close()
 
     def log_display(self, str_info):
         # get test cursor
