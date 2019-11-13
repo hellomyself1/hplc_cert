@@ -2,13 +2,16 @@
 
 import sys
 import os
+''''
 if hasattr(sys, 'frozen'):
     os.environ['PATH'] = sys._MEIPASS + ";" + os.environ['PATH']
+'''
 import serial
 import serial.tools.list_ports
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMessageBox, QLCDNumber
 from PyQt5.QtCore import pyqtSignal, QTimer
+from PyQt5.QtGui import QIcon
 from ui_hplc import Ui_Form
 import ftm_cmd
 import ui2
@@ -19,6 +22,7 @@ import time
 import logging
 # import excel
 from macro_const import DebugLeave
+import struct
 
 
 class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
@@ -32,6 +36,7 @@ class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
         self.init()
         self.initlogging()
         self.setWindowTitle("HPLC 测试系统")
+        self.setWindowIcon(QIcon('.\\config\\国家电网.jpg'))
         self.ser = serial.Serial()
 
         self.tree = ui2.TreeWidgetClass(self.treeWidget, self.tableWidget, self.record_log)
@@ -332,12 +337,14 @@ class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
 
     # some_test
     def some_test_func(self):
+        print("some test")
         """
         self.excel = excel.ExcelTool()
         self.excel.excel_init()
         list = ["TMI遍历 STA band3", 'PASS', 'great']
         self.excel.excel_write(list)
         """
+        """"
         # dut power on serial port open
         self.dut_power_on_serial_port_open()
         # self.fa.sig_gen.sg_set_ppm(300)
@@ -345,6 +352,19 @@ class Pyqt5Hplc(QtWidgets.QWidget, Ui_Form):
         self.timer = QTimer(self)  # init timer
         self.timer.timeout.connect(self.fa.test_case)
         self.timer.start(31*1000)  # start timer
+        """
+        """
+        read_data = self.fa.auto_tx_data("dtest get_txrx_ntb")
+        print(read_data)
+        a = struct.unpack('<II', read_data)
+        print(a[0])
+        print(a[1])
+        """
+        # data_crc = struct.pack('<I', read_data)
+        # print(data_crc)
+
+        # self.ft.exe_cmd("dtest get_txrx_ntb")
+        # self.ft.exe_cmd("dtest read 0x51000000 32")
 
     # read file test
     def readfile_test(self):

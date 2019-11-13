@@ -2,8 +2,10 @@
 
 import sys
 import os
+'''
 if hasattr(sys, 'frozen'):
     os.environ['PATH'] = sys._MEIPASS + ";" + os.environ['PATH']
+'''
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QColor
 from PyQt5.QtCore import Qt

@@ -17,7 +17,8 @@ import crc_calu
 import ctypes
 import inspect
 from macro_const import AttValueMarco, OtherMarco, ProtoMarco, BandIdMarco, ModeMarco, PowerMarco, NarrowMarco
-from macro_const import TmiMarco, ExtmiMarco, PbNumMarco, SignolMarco, DebugLeave, AllCertCaseValue, PpmMarco
+from macro_const import TmiMarco, ExtmiMarco, PbSizeMarco, SignolMarco, DebugLeave, AllCertCaseValue, PpmMarco
+import phy_info
 
 
 class FtmAuto:
@@ -61,7 +62,8 @@ class FtmAuto:
         self.overnight_cnt = 0
         self.crc_calu = crc_calu.crc_calu()
         self.g_tmi, self.g_extmi = 0, 0
-        self.tmipb = TmiPbNum()
+        self.tmipb = phy_info.TmiPbNum()
+        self.phyinfo = phy_info.PhyDataInfo()
 
     def auto_close(self):
         self.dut_switch_ser(PowerMarco.POWER_DOWN)
@@ -365,8 +367,8 @@ class FtmAuto:
         return self.error_type
 
     # entry phy lp mode
-    def auto_ftm_tx_test_pkt(self, tmi, extmi=0, nid=0):
-        self.auto_tx_data("load pkt_cfg_cert -d 1" + ' -n %d' % nid + ' -t %d' % tmi + ' -et %d' % extmi)
+    def auto_ftm_tx_test_pkt(self, tmi, extmi=0, nid=0, pbnum=1):
+        self.auto_tx_data("load pkt_cfg_cert -d 1" + ' -n %d' % nid + ' -t %d' % tmi + ' -et %d' % extmi + ' -pn %d' % pbnum)
         self.auto_tx_data("load pkt_data_cert_test")
         self.auto_tx_data("load test_case -n 1 -i 100")
 
@@ -375,7 +377,7 @@ class FtmAuto:
         self.auto_tx_data("load test_case -n 5 -i 500")
         time.sleep(3)
 
-    def auto_ftm_get_fc_info(self):
+    def auto_ftm_get_fc_info(self, pbnum=1):
         # get fc
         data_fc = self.auto_tx_data("dtest read 0x51001050 16")
         data_crc = self.crc_calu.crc24(data_fc)
@@ -394,9 +396,26 @@ class FtmAuto:
         str_t = str_t.replace(' ', '')
         str_t = bytes(str_t, encoding="utf8")
         pb_header = b'c0'
+        if pbnum == 2:
+            pb_header = b'40'
+        elif pbnum == 3:
+            pb_header = b'40'
+        elif pbnum == 4:
+            pb_header = b'40'
         compare_data = pack_fc + pb_header + str_t
         # print(compare_data)
         return compare_data
+
+    def auto_ftm_get_txrx_ntb(self):
+        # noinspection PyBroadException
+        try:
+            data_ntb = self.auto_tx_data("dtest get_txrx_ntb")
+            # 小端， uint32 uint32
+            ntb_list = struct.unpack('<II', data_ntb)
+            # [tx_ntb, rx_ntb]
+            return ntb_list
+        except Exception:
+            return 'error'
 
     def log_display_record(self, str_info, print_to_ui=1):
 
@@ -671,123 +690,184 @@ class FtmAuto:
         compare_flag, compare_cnt, test_cnt = 0, 0, 0
         remark = ''
         for tmi in range(tmi_max):
-            if band_id == BandIdMarco.PROTO_BAND_ID_2 and tmi == TmiMarco.TMI_7:
-                # band2 tmi7 overflow symbolnum 511
-                continue
-            elif band_id == BandIdMarco.PROTO_BAND_ID_3:
-                # band3 tmi3/7/6/9/12 overflow symbolnum 511
-                if tmi == TmiMarco.TMI_3 or tmi == TmiMarco.TMI_7 or tmi == TmiMarco.TMI_8 or tmi == TmiMarco.TMI_9 \
-                        or tmi == TmiMarco.TMI_12:
-                    continue
-            compare_flag = 0
-            test_cnt += 1
-            self.log_display_record("发送5个beacon")
-            # send beacon
-            self.auto_ftm_tx_beacon()
-            for times in range(20):
-                if compare_flag == 1:
-                    break
-                elif times == 19:
-                    break
-                # 获取10次fc，如果有一次fc获取成功就继续，如果10次都没有成功，就直接退出，报台体错误
-                for i in range(10):
-                    # pre-send pkt and get fc
-                    self.auto_ftm_tx_test_pkt(tmi, nid=3)
-                    # delay 0.5s and get correct fc
-                    time.sleep(0.5)
-                    # noinspection PyBroadException
-                    try:
-                        # get config fc
-                        self.pack_compare = self.auto_ftm_get_fc_info()
-                        break
-                    except Exception:
-                        self.pack_compare = b''
-
-                if self.pack_compare == b'':
-                    str_err = 'loopback测试中，台体连续10次获取fc错误！！！'
-                    self.log_display_record(str_err)
-                    result = 'fail'
-                    remark = str_err
-                    return [result, remark]
-
-                self.compare_queue.queue.clear()
-                self.data_record_flag = 1
-                self.g_tmi = tmi
-                self.g_extmi = 0
-                self.auto_ftm_tx_test_pkt(tmi, nid=3)
-                # noinspection PyBroadException
-                try:
-                    str_info = self.compare_queue.get(timeout=2)
-                except Exception:
-                    str_info = 'compare_fail'
-
-                if str_info == 'compare_pass':
-                    compare_cnt += 1
-                    compare_flag = 1
-                    str_l = "tmi %d loopback test success." % tmi
-                    self.log_display_record(str_l)
-                elif str_info == 'compare_fail':
-                    str_l = "tmi %d loopback test fail." % tmi
-                    self.log_display_record(str_l)
-                else:
-                    str_l = "other fail! %d" % tmi
-                    self.log_display_record(str_l)
-                remark += str_l
-                self.data_record_flag = 0
-                time.sleep(0.5)
-            if tmi == TmiMarco.TMI_14:
-                for extmi in range(extmi_max):
-                    if extmi == 0 or extmi == 7 or extmi == 8 or extmi == 9:
+            for pbnum in range(1, 5):
+                if band_id == BandIdMarco.PROTO_BAND_ID_0:
+                    if tmi == TmiMarco.TMI_7 and pbnum == 4:
                         continue
-                    compare_flag = 0
-                    test_cnt += 1
-                    self.log_display_record("发送5个beacon")
-                    # send beacon
-                    self.auto_ftm_tx_beacon()
-                    for times in range(20):
-                        if compare_flag == 1:
-                            break
-                        elif times == 19:
-                            break
+                elif band_id == BandIdMarco.PROTO_BAND_ID_1:
+                    if tmi == TmiMarco.TMI_0 and pbnum == 4:
+                        continue
+                    elif tmi == TmiMarco.TMI_3 and (pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_7 and (pbnum == 2 or pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_8 and (pbnum == 2 or pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_9 and (pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_10 and pbnum == 4:
+                        continue
+                    elif tmi == TmiMarco.TMI_12 and (pbnum == 3 or pbnum == 4):
+                        continue
+                elif band_id == BandIdMarco.PROTO_BAND_ID_2:
+                    if tmi == TmiMarco.TMI_0 and (pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_3 and (pbnum == 2 or pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_4 and (pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_5 and pbnum == 4:
+                        continue
+                    elif tmi == TmiMarco.TMI_7:
+                        # band2 tmi7 overflow symbolnum 511
+                        continue
+                    elif tmi == TmiMarco.TMI_8 and (pbnum == 2 or pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_9 and (pbnum == 2 or pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_10 and (pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_11 and (pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_12 and (pbnum == 2 or pbnum == 3 or pbnum == 4):
+                        continue
+                elif band_id == BandIdMarco.PROTO_BAND_ID_3:
+                    # band3 tmi3/7/6/9/12 overflow symbolnum 511
+                    if tmi == TmiMarco.TMI_3 or tmi == TmiMarco.TMI_7 or tmi == TmiMarco.TMI_8 or tmi == TmiMarco.TMI_9 \
+                            or tmi == TmiMarco.TMI_12:
+                        continue
+                    elif tmi == TmiMarco.TMI_0 and (pbnum == 2 or pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_1 and (pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_2 and pbnum == 4:
+                        continue
+                    elif tmi == TmiMarco.TMI_4 and (pbnum == 2 or pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_5 and (pbnum == 2 or pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_6 and (pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_10 and (pbnum == 2 or pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_11 and (pbnum == 2 or pbnum == 3 or pbnum == 4):
+                        continue
+                    elif tmi == TmiMarco.TMI_14 and (pbnum == 3 or pbnum == 4):
+                        continue
+                compare_flag = 0
+                test_cnt += 1
+                self.log_display_record("发送5个beacon")
+                # send beacon
+                self.auto_ftm_tx_beacon()
+                for times in range(20):
+                    if compare_flag == 1:
+                        break
+                    elif times == 19:
+                        break
+                    # 获取10次fc，如果有一次fc获取成功就继续，如果10次都没有成功，就直接退出，报台体错误
+                    for i in range(10):
                         # pre-send pkt and get fc
-                        self.auto_ftm_tx_test_pkt(TmiMarco.TMI_MAX, extmi, nid=3)
+                        self.auto_ftm_tx_test_pkt(tmi, nid=3, pbnum=pbnum)
                         # delay 0.5s and get correct fc
                         time.sleep(0.5)
-                        # get config fc
-                        self.pack_compare = self.auto_ftm_get_fc_info()
-
-                        self.compare_queue.queue.clear()
-                        self.data_record_flag = 1
-                        self.g_tmi = TmiMarco.TMI_MAX
-                        self.g_extmi = extmi
-                        self.auto_ftm_tx_test_pkt(TmiMarco.TMI_MAX, extmi, nid=3)
-
                         # noinspection PyBroadException
                         try:
-                            str_info = self.compare_queue.get(timeout=2)
+                            # get config fc
+                            self.pack_compare = self.auto_ftm_get_fc_info(pbnum=pbnum)
+                            break
                         except Exception:
-                            str_info = 'compare_fail'
+                            self.pack_compare = b''
 
-                        if str_info == 'compare_pass':
-                            compare_cnt += 1
-                            compare_flag = 1
-                            str_l = "ext tmi %d loopback test success." % extmi
-                            self.log_display_record(str_l)
-                        elif str_info == 'compare_fail':
-                            str_l = "ext tmi %d loopback test fail." % extmi
-                            self.log_display_record(str_l)
-                        else:
-                            str_l = "other fail! %d" % extmi
-                            self.log_display_record(str_l)
-                        remark += str_l
-                        self.data_record_flag = 0
-                        time.sleep(0.5)
-                    # set pbar value
-                    pbar_value += pbar_step
-                    self.auto_pbar_set(pbar_value)
-            # set pbar value
-            pbar_value += pbar_step
-            self.auto_pbar_set(pbar_value)
+                    if self.pack_compare == b'':
+                        str_err = 'loopback测试中，台体连续10次获取fc错误！！！'
+                        self.log_display_record(str_err)
+                        result = 'fail'
+                        remark = str_err
+                        return [result, remark]
+
+                    self.compare_queue.queue.clear()
+                    self.data_record_flag = 1
+                    self.g_tmi = tmi
+                    self.g_extmi = 0
+                    self.auto_ftm_tx_test_pkt(tmi, nid=3, pbnum=pbnum)
+                    # noinspection PyBroadException
+                    try:
+                        str_info = self.compare_queue.get(timeout=2)
+                    except Exception:
+                        str_info = 'compare_fail'
+
+                    if str_info == 'compare_pass':
+                        compare_cnt += 1
+                        compare_flag = 1
+                        str_l = "tmi %d pbnum %d loopback test success." % (tmi, pbnum)
+                        self.log_display_record(str_l)
+                    elif str_info == 'compare_fail':
+                        str_l = "tmi %d pbnum %d loopback test fail." % (tmi, pbnum)
+                        self.log_display_record(str_l)
+                    else:
+                        str_l = "other fail! tmi %d pbnum %d" % (tmi, pbnum)
+                        self.log_display_record(str_l)
+                    remark += str_l
+                    self.data_record_flag = 0
+                    time.sleep(0.5)
+
+            if tmi == TmiMarco.TMI_14:
+                for extmi in range(extmi_max):
+                    for expbnum in range(1, 5):
+                        if extmi == 0 or extmi == 7 or extmi == 8 or extmi == 9:
+                            continue
+                        if band_id == BandIdMarco.PROTO_BAND_ID_3:
+                            if tmi == ExtmiMarco.EXTMI_5 and (expbnum == 3 or expbnum == 4):
+                                continue
+                        compare_flag = 0
+                        test_cnt += 1
+                        self.log_display_record("发送5个beacon")
+                        # send beacon
+                        self.auto_ftm_tx_beacon()
+                        for times in range(20):
+                            if compare_flag == 1:
+                                break
+                            elif times == 19:
+                                break
+                            # pre-send pkt and get fc
+                            self.auto_ftm_tx_test_pkt(TmiMarco.TMI_MAX, extmi, nid=3, pbnum=expbnum)
+                            # delay 0.5s and get correct fc
+                            time.sleep(0.5)
+                            # get config fc
+                            self.pack_compare = self.auto_ftm_get_fc_info(pbnum=expbnum)
+
+                            self.compare_queue.queue.clear()
+                            self.data_record_flag = 1
+                            self.g_tmi = TmiMarco.TMI_MAX
+                            self.g_extmi = extmi
+                            self.auto_ftm_tx_test_pkt(TmiMarco.TMI_MAX, extmi, nid=3, pbnum=expbnum)
+
+                            # noinspection PyBroadException
+                            try:
+                                str_info = self.compare_queue.get(timeout=2)
+                            except Exception:
+                                str_info = 'compare_fail'
+
+                            if str_info == 'compare_pass':
+                                compare_cnt += 1
+                                compare_flag = 1
+                                str_l = "ext tmi %d pbnum %d loopback test success." % (extmi, expbnum)
+                                self.log_display_record(str_l)
+                            elif str_info == 'compare_fail':
+                                str_l = "ext tmi %d pbnum %d loopback test fail." % (extmi, expbnum)
+                                self.log_display_record(str_l)
+                            else:
+                                str_l = "other fail! tmi:%d pbnum:%d " % (extmi, expbnum)
+                                self.log_display_record(str_l)
+                            remark += str_l
+                            self.data_record_flag = 0
+                            time.sleep(0.5)
+                        # set pbar value
+                        pbar_value += pbar_step
+                        self.auto_pbar_set(pbar_value)
+                # set pbar value
+                pbar_value += pbar_step
+                self.auto_pbar_set(pbar_value)
 
         if compare_cnt == test_cnt:
             result = 'pass'
@@ -1701,7 +1781,7 @@ class FtmAuto:
         self.ftm_switch_ser(PowerMarco.POWER_DOWN)
         self.sig_gen.close_signal_generator()
 
-    def loopback_psd_mask_handle(self, str_title, band_id, tmi, mask_id=0, test_times=100):
+    def loopback_tmi_mask_handle(self, str_title, band_id, tmi, mask_id=0, test_times=100, rate_test=False):
         # start run
         str_ftm = "开始测试 " + str_title
         self.log_display_record(str_ftm)
@@ -1805,6 +1885,25 @@ class FtmAuto:
                 compare_flag = 1
                 str_l = "tmi %d loopback test success. %d times." % (tmi, compare_cnt)
                 self.log_display_record(str_l)
+
+                if rate_test is True:
+                    data_ntb = self.auto_ftm_get_txrx_ntb()
+                    if data_ntb == 'error':
+                        break
+                    tx_ntb, rx_ntb = self.auto_ftm_get_txrx_ntb()
+                    ntb_dlt = rx_ntb - tx_ntb
+                    if ntb_dlt < 0:
+                        ntb_dlt = 0x100000000 - tx_ntb + rx_ntb
+                    fl = self.phyinfo.phy_calu_fl_per_pb(ProtoMarco.PROTO_SG, 0, tmi)
+                    pkt_interval_temp = (ntb_dlt * 0.04 + 100 - fl)
+                    pkt_interval = pkt_interval + pkt_interval_temp
+                    pb_size = self.tmipb.tmi_get_pb_num(tmi)
+                    pld = pb_size - 4
+                    app_rate_temp = (pld/((ntb_dlt*0.04) + 100))
+                    app_rate = app_rate + app_rate_temp
+
+                    print("pkt interval:%d, app rate:%d" % (pkt_interval_temp, app_rate_temp))
+
             elif str_info == 'compare_fail':
                 fail_cnt += 1
                 str_l = "tmi %d loopback test fail. %d times" % (tmi, fail_cnt)
@@ -1836,7 +1935,7 @@ class FtmAuto:
 
         # 获取开始时间
         t_start = datetime.now()
-        result, remark = self.loopback_psd_mask_handle('功率频谱密度 STA band1', BandIdMarco.PROTO_BAND_ID_1, TmiMarco.TMI_4)
+        result, remark = self.loopback_tmi_mask_handle('功率频谱密度 STA band1', BandIdMarco.PROTO_BAND_ID_1, TmiMarco.TMI_4)
 
         # 获取结束时间
         t_end = datetime.now()
@@ -1865,7 +1964,7 @@ class FtmAuto:
 
         # 获取开始时间
         t_start = datetime.now()
-        result, remark = self.loopback_psd_mask_handle('功率频谱密度 STA band2', BandIdMarco.PROTO_BAND_ID_2, TmiMarco.TMI_4)
+        result, remark = self.loopback_tmi_mask_handle('功率频谱密度 STA band2', BandIdMarco.PROTO_BAND_ID_2, TmiMarco.TMI_4)
 
         # 获取结束时间
         t_end = datetime.now()
@@ -1884,13 +1983,64 @@ class FtmAuto:
         self.sig_gen.close_signal_generator()
 
     # sta rate
-    def sta_performance_rate(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["STA 速率测试", '%s' % dlt_t, "pass", "ok"])
+    def sta_performance_rate_band1(self):
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch = '.\\LOG\\cert_log\\性能测试'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        self.filename_record = patch + '\\sta_速率测试_band1_' + file_time + '.log'
+
+        # 获取开始时间
+        t_start = datetime.now()
+        result, remark = self.loopback_tmi_mask_handle('STA 速率测试 band1', BandIdMarco.PROTO_BAND_ID_1,
+                                                       TmiMarco.TMI_4, rate_test=True)
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["STA 速率测试 band1", '%s' % dlt_t, result, remark])
+
+        self.log_display_record(remark)
+        self.log_display_record(" 测试结束, 结果: %s " % result)
+
+        self.auto_pbar_set(100)
+
+        # clear status
+        self.data_record_flag = 0
+        self.dut_switch_ser(PowerMarco.POWER_DOWN)
+        self.ftm_switch_ser(PowerMarco.POWER_DOWN)
+        self.sig_gen.close_signal_generator()
+
+    # sta rate
+    def sta_performance_rate_band2(self):
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch = '.\\LOG\\cert_log\\性能测试'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        self.filename_record = patch + '\\sta_速率测试_band2_' + file_time + '.log'
+
+        # 获取开始时间
+        t_start = datetime.now()
+        result, remark = self.loopback_tmi_mask_handle('STA 速率测试 band2', BandIdMarco.PROTO_BAND_ID_2,
+                                                       TmiMarco.TMI_4, rate_test=True)
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["STA 速率测试 band2", '%s' % dlt_t, result, remark])
+
+        self.log_display_record(remark)
+        self.log_display_record(" 测试结束, 结果: %s " % result)
+
+        self.auto_pbar_set(100)
+
+        # clear status
+        self.data_record_flag = 0
+        self.dut_switch_ser(PowerMarco.POWER_DOWN)
+        self.ftm_switch_ser(PowerMarco.POWER_DOWN)
+        self.sig_gen.close_signal_generator()
 
     # cco white noise band1
     def cco_performance_white_noise_band1(self):
@@ -2339,7 +2489,7 @@ class FtmAuto:
 
         # 获取开始时间
         t_start = datetime.now()
-        result, remark = self.loopback_psd_mask_handle('功率频谱密度 CCO band1', BandIdMarco.PROTO_BAND_ID_1, TmiMarco.TMI_4)
+        result, remark = self.loopback_tmi_mask_handle('功率频谱密度 CCO band1', BandIdMarco.PROTO_BAND_ID_1, TmiMarco.TMI_4)
 
         # 获取结束时间
         t_end = datetime.now()
@@ -2368,7 +2518,7 @@ class FtmAuto:
 
         # 获取开始时间
         t_start = datetime.now()
-        result, remark = self.loopback_psd_mask_handle('功率频谱密度 CCO band2', BandIdMarco.PROTO_BAND_ID_2, TmiMarco.TMI_4)
+        result, remark = self.loopback_tmi_mask_handle('功率频谱密度 CCO band2', BandIdMarco.PROTO_BAND_ID_2, TmiMarco.TMI_4)
 
         # 获取结束时间
         t_end = datetime.now()
@@ -2386,14 +2536,65 @@ class FtmAuto:
         self.ftm_switch_ser(PowerMarco.POWER_DOWN)
         self.sig_gen.close_signal_generator()
 
-    # cco rate
-    def cco_performance_rate(self):
-        t1 = datetime.now()
-        time.sleep(4)
-        t2 = datetime.now()
-        dlt_t = t2 - t1
-        print("用时: %s" % dlt_t)
-        self.table.signal2emit(["CCO 速率测试", '%s' % dlt_t, "pass", "ok"])
+    # sta rate
+    def cco_performance_rate_band1(self):
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch = '.\\LOG\\cert_log\\性能测试'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        self.filename_record = patch + '\\CCO_速率测试_band1_' + file_time + '.log'
+
+        # 获取开始时间
+        t_start = datetime.now()
+        result, remark = self.loopback_tmi_mask_handle('CCO 速率测试 band1', BandIdMarco.PROTO_BAND_ID_2,
+                                                       TmiMarco.TMI_4, rate_test=True)
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["CCO 速率测试 band1", '%s' % dlt_t, result, remark])
+
+        self.log_display_record(remark)
+        self.log_display_record(" 测试结束, 结果: %s " % result)
+
+        self.auto_pbar_set(100)
+
+        # clear status
+        self.data_record_flag = 0
+        self.dut_switch_ser(PowerMarco.POWER_DOWN)
+        self.ftm_switch_ser(PowerMarco.POWER_DOWN)
+        self.sig_gen.close_signal_generator()
+
+    # sta rate
+    def cco_performance_rate_band2(self):
+        self.auto_pbar_set(0)
+        file_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+        patch = '.\\LOG\\cert_log\\性能测试'
+        if not os.path.exists(patch):
+            os.makedirs(patch)
+        self.filename_record = patch + '\\CCO_速率测试_band2_' + file_time + '.log'
+
+        # 获取开始时间
+        t_start = datetime.now()
+        result, remark = self.loopback_tmi_mask_handle('CCO 速率测试 band2', BandIdMarco.PROTO_BAND_ID_2,
+                                                       TmiMarco.TMI_4, rate_test=True)
+
+        # 获取结束时间
+        t_end = datetime.now()
+        dlt_t = t_end - t_start
+        self.table.signal2emit(["CCO 速率测试 band2", '%s' % dlt_t, result, remark])
+
+        self.log_display_record(remark)
+        self.log_display_record(" 测试结束, 结果: %s " % result)
+
+        self.auto_pbar_set(100)
+
+        # clear status
+        self.data_record_flag = 0
+        self.dut_switch_ser(PowerMarco.POWER_DOWN)
+        self.ftm_switch_ser(PowerMarco.POWER_DOWN)
+        self.sig_gen.close_signal_generator()
 
     def auto_call_back(self, index):
         if AllCertCaseValue.ROOT_PROTOCON_STA_TMISCAN_B0 == index:
@@ -2452,8 +2653,10 @@ class FtmAuto:
             self.sta_performance_psd_band1()
         elif AllCertCaseValue.ROOT_PERFORMANCE_STA_PSD_B2 == index:
             self.sta_performance_psd_band2()
-        elif AllCertCaseValue.ROOT_PERFORMANCE_STA_RATE == index:
-            self.sta_performance_rate()
+        elif AllCertCaseValue.ROOT_PERFORMANCE_STA_RATE_B1 == index:
+            self.sta_performance_rate_band1()
+        elif AllCertCaseValue.ROOT_PERFORMANCE_STA_RATE_B2 == index:
+            self.sta_performance_rate_band2()
         elif AllCertCaseValue.ROOT_PERFORMANCE_CCO_WN_B1 == index:
             self.cco_performance_white_noise_band1()
         elif AllCertCaseValue.ROOT_PERFORMANCE_CCO_WN_B2 == index:
@@ -2478,8 +2681,10 @@ class FtmAuto:
             self.cco_performance_psd_band1()
         elif AllCertCaseValue.ROOT_PERFORMANCE_CCO_PSD_B2 == index:
             self.cco_performance_psd_band2()
-        elif AllCertCaseValue.ROOT_PERFORMANCE_CCO_RATE == index:
-            self.cco_performance_rate()
+        elif AllCertCaseValue.ROOT_PERFORMANCE_CCO_RATE_B1 == index:
+            self.cco_performance_rate_band1()
+        elif AllCertCaseValue.ROOT_PERFORMANCE_CCO_RATE_B2 == index:
+            self.cco_performance_rate_band2()
         else:
             print("%s is not here" % index)
 
@@ -2514,22 +2719,4 @@ class FtmAuto:
                 print("i am happy")
 
 
-class TmiPbNum:
-    def tmi_get_pb_num(self, tmi, extmi=0):
-        if tmi == TmiMarco.TMI_0 or tmi == TmiMarco.TMI_1 or (TmiMarco.TMI_7 <= tmi <= TmiMarco.TMI_10):
-            return PbNumMarco.PB_NUM_520
-        elif TmiMarco.TMI_2 <= tmi <= TmiMarco.TMI_6:
-            return PbNumMarco.PB_NUM_136
-        elif tmi == TmiMarco.TMI_11 or tmi == TmiMarco.TMI_12:
-            return PbNumMarco.PB_NUM_264
-        elif tmi == TmiMarco.TMI_13 or tmi == TmiMarco.TMI_14:
-            return PbNumMarco.PB_NUM_72
-        elif tmi == TmiMarco.TMI_MAX:
-            if ExtmiMarco.EXTMI_1 <= extmi <= ExtmiMarco.EXTMI_6:
-                return PbNumMarco.PB_NUM_520
-            elif ExtmiMarco.EXTMI_10 <= extmi <= ExtmiMarco.EXTMI_14:
-                return PbNumMarco.PB_NUM_136
-            else:
-                return 0
-        else:
-            return 0
+

@@ -77,7 +77,8 @@ DictCommandInfo = {
     "set_band": 0x2a,
     "read mac": 0x2b,
     "efuse lock": 0x2d,
-    "spur_mask_set": 0x2e
+    "spur_mask_set": 0x2e,
+    "get_txrx_ntb": 0x49
 }
 
 NoneParamCommandList = [
@@ -87,7 +88,7 @@ NoneParamCommandList = [
     "get_period_ms", "get_pb_size", "get_pb_num",
     "scan", "scan_all", "scan_uart", "scan_vpp", "scan_snr",
     "scan_fa", "scan_loopback", "scan_dc_tx", "scan_dc_rx",
-    "clear_count", "read_pkt_count", "efuse_lock", "spur_mask_set"
+    "clear_count", "read_pkt_count", "efuse_lock", "spur_mask_set", "get_txrx_ntb"
 ]
 
 DictCtypeToCtypes = {
@@ -188,6 +189,7 @@ DicParam_ping_tput = {
     "-pot": "ping_or_tput"
 }
 
+
 # - command: set_band
 class Sset_band(Base_Param_Type):
     _pack_ = 1
@@ -195,6 +197,7 @@ class Sset_band(Base_Param_Type):
                 ('data1', c_ubyte),
                 ('data2', c_ubyte)
                 ]
+
 
 class Sread(Base_Param_Type):  # Sturcture read
     _pack_ = 1
@@ -204,6 +207,13 @@ class Sread(Base_Param_Type):  # Sturcture read
 
 
 class Swrite(Base_Param_Type):  # Sturcture write
+    _pack_ = 1
+    _fields_ = [('data0', c_uint),
+                ('data1', c_uint)
+                ]
+
+
+class Sget_txrx_ntb(Base_Param_Type):  # Sturcture write
     _pack_ = 1
     _fields_ = [('data0', c_uint),
                 ('data1', c_uint)
@@ -267,7 +277,7 @@ class FtmTool:
         param_list, send_list = [], []
 
         dic_keys = DictCommandInfo.keys()
-        #dic_keys.sort(key=len)
+        # dic_keys.sort(key=len)
         if msg_info.lower() == 'exit':
             sys.exit()
         elif msg_info.find('load') >= 0:
@@ -283,6 +293,10 @@ class FtmTool:
             for key in dic_keys:
                 m = re.match(r"dtest\s+" + r"(\b" + key + r"\b)" + r"(\s+(.*)\s*)*", msg_info)
                 if m:
+                    print(m.group(0))
+                    print(m.group(1))
+                    print(m.group(2))
+                    print(m.group(3))
                     param_str = m.group(3)
                     p_list_temp = list(key)
                     for i in range(len(p_list_temp)):
@@ -294,11 +308,11 @@ class FtmTool:
             print("cmd error\n")
             return
 
-        #self.record_log(DebugLeave.LOG_DEBUG, '*' * 20 + "Sending Start" + "*" * 25)
-        #self.record_log(DebugLeave.LOG_DEBUG, r"The Command case is : %s, The ModuleID is: %s, The MessageID is: %s"
+        # self.record_log(DebugLeave.LOG_DEBUG, '*' * 20 + "Sending Start" + "*" * 25)
+        # self.record_log(DebugLeave.LOG_DEBUG, r"The Command case is : %s, The ModuleID is: %s, The MessageID is: %s"
         #             % (msg_info, module_id, message_id))
 
-        if (msg_info.find('load') >= 0):
+        if msg_info.find('load') >= 0:
             test_case_file = self.TestCaseFolder + "\\" + file_name + r".txt"
             if not os.path.exists(test_case_file):
                 self.record_log(DebugLeave.LOG_ERROR, "Load File does not exist! ")
@@ -611,14 +625,13 @@ class FtmTool:
             r_msg_len = unpack_data_big_header[-1]
             data_msg_body = total_data[-r_msg_len:]
 
-            if (r_module_id == 3 and r_msg_id == 1):
+            if r_module_id == 3 and r_msg_id == 1:
                 little_header_fmt = '<HHH'
                 len_little_header_fmt = struct.calcsize(little_header_fmt)
                 data_little_header = data_msg_body[0: len_little_header_fmt]
                 ss = struct.Struct(little_header_fmt)
                 unpakc_data_little_header = ss.unpack(data_little_header)
                 rid, tlen, dlen = unpakc_data_little_header
-                data_valid = data_msg_body[len_little_header_fmt:-3]
                 ''''
                 if (rid != 0x0f and rid != 0x0e):
                     self.record_log(DebugLeave.LOG_DEBUG, '-' * 20 + "CallBacking End" + "-" * 25)
@@ -648,6 +661,12 @@ class FtmTool:
                     self.record_log(DebugLeave.LOG_DEBUG, self.msg_info_cmd + " command tx successed")
                     self.response_queue.put(self.msg_info_cmd)
                 elif rid == DictCommandInfo["read"] and tlen == dlen:
+                    # last 3 byte is crc, so reduce
+                    data_valid = data_msg_body[len_little_header_fmt:-3]
+                    self.record_log(DebugLeave.LOG_DEBUG, data_valid)
+                    self.response_queue.put(data_valid)
+                elif rid == DictCommandInfo["get_txrx_ntb"] and tlen == dlen:
+                    data_valid = data_msg_body[len_little_header_fmt:]
                     self.record_log(DebugLeave.LOG_DEBUG, data_valid)
                     self.response_queue.put(data_valid)
                 else:

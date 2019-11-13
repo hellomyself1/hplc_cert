@@ -100,28 +100,30 @@ class AllCertCaseValue:
     ROOT_PERFORMANCE_STA_PSD_B1 = 91
     ROOT_PERFORMANCE_STA_PSD_B2 = 92
     # sta rate
-    ROOT_PERFORMANCE_STA_RATE = 93
+    ROOT_PERFORMANCE_STA_RATE_B1 = 93
+    ROOT_PERFORMANCE_STA_RATE_B2 = 94
     # white noise
-    ROOT_PERFORMANCE_CCO_WN_B1 = 94
-    ROOT_PERFORMANCE_CCO_WN_B2 = 95
+    ROOT_PERFORMANCE_CCO_WN_B1 = 95
+    ROOT_PERFORMANCE_CCO_WN_B2 = 96
     # anti-ppm
-    ROOT_PERFORMANCE_CCO_ANTIPPM_B1 = 96
-    ROOT_PERFORMANCE_CCO_ANTIPPM_B2 = 97
+    ROOT_PERFORMANCE_CCO_ANTIPPM_B1 = 97
+    ROOT_PERFORMANCE_CCO_ANTIPPM_B2 = 98
     # anti-attenuation
-    ROOT_PERFORMANCE_CCO_ANTIATT_B1 = 98
-    ROOT_PERFORMANCE_CCO_ANTIATT_B2 = 99
+    ROOT_PERFORMANCE_CCO_ANTIATT_B1 = 99
+    ROOT_PERFORMANCE_CCO_ANTIATT_B2 = 100
     # anti-narrowband
-    ROOT_PERFORMANCE_CCO_ANTINARROW_B1 = 100
-    ROOT_PERFORMANCE_CCO_ANTINARROW_B2 = 101
+    ROOT_PERFORMANCE_CCO_ANTINARROW_B1 = 101
+    ROOT_PERFORMANCE_CCO_ANTINARROW_B2 = 102
     # anti-pulse
-    ROOT_PERFORMANCE_CCO_ANTIPULSE_B1 = 102
-    ROOT_PERFORMANCE_CCO_ANTIPULSE_B2 = 103
+    ROOT_PERFORMANCE_CCO_ANTIPULSE_B1 = 103
+    ROOT_PERFORMANCE_CCO_ANTIPULSE_B2 = 104
     # psd
-    ROOT_PERFORMANCE_CCO_PSD_B1 = 104
-    ROOT_PERFORMANCE_CCO_PSD_B2 = 105
+    ROOT_PERFORMANCE_CCO_PSD_B1 = 105
+    ROOT_PERFORMANCE_CCO_PSD_B2 = 106
     # CCO rate
-    ROOT_PERFORMANCE_CCO_RATE = 106
-    ROOT_PERFORMANCE_MAX = ROOT_PERFORMANCE_CCO_RATE + 1
+    ROOT_PERFORMANCE_CCO_RATE_B1 = 107
+    ROOT_PERFORMANCE_CCO_RATE_B2 = 108
+    ROOT_PERFORMANCE_MAX = ROOT_PERFORMANCE_CCO_RATE_B2 + 1
 
     # max
     TREE_MAX = ROOT_PERFORMANCE_MAX + 1
@@ -165,7 +167,8 @@ DictCommandInfo = {
     "抗脉冲性能 STA band2": AllCertCaseValue.ROOT_PERFORMANCE_STA_ANTIPULSE_B2,
     "功率频谱密度 STA band1": AllCertCaseValue.ROOT_PERFORMANCE_STA_PSD_B1,
     "功率频谱密度 STA band2": AllCertCaseValue.ROOT_PERFORMANCE_STA_PSD_B2,
-    "STA 速率测试": AllCertCaseValue.ROOT_PERFORMANCE_STA_RATE,
+    "STA 速率测试 band1": AllCertCaseValue.ROOT_PERFORMANCE_STA_RATE_B1,
+    "STA 速率测试 band2": AllCertCaseValue.ROOT_PERFORMANCE_STA_RATE_B2,
     "白噪性能 CCO band1": AllCertCaseValue.ROOT_PERFORMANCE_CCO_WN_B1,
     "白噪性能 CCO band2": AllCertCaseValue.ROOT_PERFORMANCE_CCO_WN_B2,
     "抗频偏性能 CCO band1": AllCertCaseValue.ROOT_PERFORMANCE_CCO_ANTIPPM_B1,
@@ -178,7 +181,8 @@ DictCommandInfo = {
     "抗脉冲性能 CCO band2": AllCertCaseValue.ROOT_PERFORMANCE_CCO_ANTIPULSE_B2,
     "功率频谱密度 CCO band1": AllCertCaseValue.ROOT_PERFORMANCE_CCO_PSD_B1,
     "功率频谱密度 CCO band2": AllCertCaseValue.ROOT_PERFORMANCE_CCO_PSD_B2,
-    "CCO 速率测试": AllCertCaseValue.ROOT_PERFORMANCE_CCO_RATE,
+    "CCO 速率测试 band1": AllCertCaseValue.ROOT_PERFORMANCE_CCO_RATE_B1,
+    "CCO 速率测试 band2": AllCertCaseValue.ROOT_PERFORMANCE_CCO_RATE_B2,
 }
 
 ##########################################################
@@ -229,12 +233,117 @@ class ExtmiMarco:
     EXTMI_MAX = 15
 
 
-class PbNumMarco:
+class PbSizeMarco:
     PB_NUM_72 = 72
     PB_NUM_136 = 136
     PB_NUM_264 = 264
     PB_NUM_520 = 520
+    PB_SIZE_INV = 0
 
+
+class RoboCopyMarco:
+    ROBO_COPY_1 = 1
+    ROBO_COPY_2 = 2
+    ROBO_COPY_4 = 4
+    ROBO_COPY_5 = 5
+    ROBO_COPY_7 = 7
+    ROBO_COPY_11 = 11
+
+
+class InterMarco:
+    INTER_1 = 1
+    INTER_8 = 8
+    INTER_10 = 10
+    INTER_11 = 11
+    INTER_14 = 14
+
+
+""""
+/* Modulation has a relation to BPC
+ * Mapping for BPSK, QPSK, 8-QAM, 16-QAM,
+ * 64-QAM, 256-QAM, 1024-QAM, The Mapper
+ * takes 1, 2, 3, 4, 6, 8, or 10 bits
+ */
+"""
+
+
+class ModulationMarco:
+    MODULATION_BPSK = 1
+    MODULATION_QPSK = 2
+    MODULATION_8QAM = 3
+    MODULATION_16QAM = 4
+
+
+class PbNumMarco:
+    MAX_PB_NUM_1 = 1
+    MAX_PB_NUM_2 = 2
+    MAX_PB_NUM_3 = 3
+    MAX_PB_NUM_4 = 4
+
+
+class CodingRateMarco:
+    CODING_RATE_1_2 = 0
+    CODING_RATE_16_18 = 1
+
+
+class ValidToneMarco:
+    VALID_TONE_BAND_0 = 411       # band0   80   -   490
+    VALID_TONE_BAND_1 = 131       # band1   100  -   230
+    VALID_TONE_BAND_2 = 89        # band2   32   -   120
+    VALID_TONE_BAND_3 = 49        # band3   72   -   120
+    VALID_TONE_BAND_4 = 260       # band4   231  -   490
+    VALID_TONE_BAND_8 = 131       # band8   240  -   370
+    VALID_TONE_BAND_9 = 801       # band9   200  -   1000
+    VALID_TONE_BAND_10 = 256      # band10  1160 -   1415
+    VALID_TONE_BAND_11 = 301      # band11  200  -   500
+
+
+class FcSymNumMarco:
+    FC_SYM_NUM_4 = 4
+    FC_SYM_NUM_12 = 12
+
+
+class RateMarco:
+    RATE_0 = 0
+    RATE_1 = 1
+
+
+class StartValidToneMarco:
+    START_VALID_TONE_BAND_0 = 80
+    START_VALID_TONE_BAND_1 = 100
+    START_VALID_TONE_BAND_2 = 32
+    START_VALID_TONE_BAND_3 = 72
+    START_VALID_TONE_BAND_4 = 231
+    START_VALID_TONE_BAND_8 = 240
+    START_VALID_TONE_BAND_9 = 200
+    START_VALID_TONE_BAND_10 = 1160
+    START_VALID_TONE_BAND_11 = 200
+
+
+class EndValidToneMarco:
+    END_VALID_TONE_BAND_0 = 490
+    END_VALID_TONE_BAND_1 = 230
+    END_VALID_TONE_BAND_2 = 120
+    END_VALID_TONE_BAND_3 = 120
+    END_VALID_TONE_BAND_4 = 490
+    END_VALID_TONE_BAND_8 = 370
+    END_VALID_TONE_BAND_9 = 1000
+    END_VALID_TONE_BAND_10 = 1415
+    END_VALID_TONE_BAND_11 = 500
+
+
+class FdRmsMaxMarco:
+    RMS_MAX_58 = 58
+    RMS_MAX_63 = 63
+    RMS_MAX_60 = 60
+
+
+class RoboMarco:
+    GI_MINI_ROBO = 567
+    GI_HS_ROBO = 417
+    GI_STD_ROBO = 417
+    GI_SG_ROBO_LONG = 458
+    GI_SG_ROBO_SHORT = 264
 
 ##########################################################
 #                    debug leave                         #
